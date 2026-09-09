@@ -23,6 +23,11 @@ public class AcaoController {
         return service.listar();
     }
 
+    @GetMapping("/disponiveis")
+    public List<com.crt.dto.AcaoDisponivelDTO> listarDisponiveis() {
+        return service.listarDisponiveis();
+    }
+
     @GetMapping("/{id}")
     public Acao buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);

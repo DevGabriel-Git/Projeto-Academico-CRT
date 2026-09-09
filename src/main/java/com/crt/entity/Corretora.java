@@ -1,7 +1,7 @@
 package com.crt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity
 @Getter
 @Setter
@@ -21,7 +20,7 @@ import java.util.List;
 public class Corretora {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private String cnpj;
     private String razaoSocial;
@@ -34,9 +33,13 @@ public class Corretora {
     private Boolean validadaNaCvm;
     private LocalDateTime dataCadastro;
 
-    @OneToMany(mappedBy = "corretora")
+    @OneToMany(mappedBy = "corretora", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Acao> acoes = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    @JsonIgnore
+    private Usuario usuario;
 }
 

@@ -8,9 +8,11 @@ import com.crt.entity.Corretora;
 import com.crt.repository.CorretoraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import com.crt.entity.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class CorretoraService {
@@ -24,19 +26,21 @@ public class CorretoraService {
     @Autowired
     private CorretoraRepository repository;
 
+    private Usuario getAuthenticatedUser() {
+        return (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     public Corretora cadastrar(String cnpj){
 
-
-        if (repository.findByCnpj(cnpj).isPresent()){
+        if (repository.findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId()).isPresent()){
             throw new RuntimeException("CNPJ já cadastrado");
         }
-
 
         CnpjResponseDTO dados;
         try {
             dados = cnpjService.buscar(cnpj);
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao buscar dados do CNPJ");
+            throw new RuntimeException(e.getMessage());
         }
 
         CepResponseDTO cepDados = null;
@@ -49,7 +53,6 @@ public class CorretoraService {
             }
         }
 
-
         Corretora c = new Corretora();
         c.setCnpj(cnpj);
         c.setRazaoSocial(dados.getRazao_social());
@@ -57,8 +60,16 @@ public class CorretoraService {
         c.setCep(dados.getCep());
         c.setUf(dados.getUf());
         c.setDataCadastro(LocalDateTime.now());
-        c.setValidadaNaCvm(false);
-
+        
+        boolean validada = false;
+        try {
+            RestTemplate rest = new RestTemplate();
+            rest.getForObject("https://brasilapi.com.br/api/cvm/corretoras/v1/" + cnpj, String.class);
+            validada = true;
+        } catch (Exception e) {
+            System.out.println("Não encontrada na CVM.");
+        }
+        c.setValidadaNaCvm(validada);
 
         if (cepDados != null) {
             c.setCidade(cepDados.getLocalidade());
@@ -66,12 +77,18 @@ public class CorretoraService {
             c.setBairro(cepDados.getBairro());
         }
 
+        c.setUsuario(getAuthenticatedUser());
+
         return repository.save(c);
     }
-    public List<Corretora> listar() { return repository.findAll(); }
+    
+    public List<Corretora> listar() { return repository.findByUsuarioId(getAuthenticatedUser().getId()); }
 
-    public Corretora buscarPorId(Long id) { return repository.findById(id) .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
+    public Corretora buscarPorId(Long id) { return repository.findByIdAndUsuarioId(id, getAuthenticatedUser().getId()) .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
     }
-    public Corretora buscarPorCnpj(String cnpj) { return repository.findByCnpj(cnpj) .orElseThrow(() -> new RuntimeException("CNPJ não encontrado"));
+    
+    public Corretora buscarPorCnpj(String cnpj) { return repository.findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId()) .orElseThrow(() -> new RuntimeException("CNPJ não encontrado"));
     }
+    
+    public void deletar(Long id) { Corretora corretora = buscarPorId(id); repository.delete(corretora); }
 }

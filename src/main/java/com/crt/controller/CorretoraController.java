@@ -30,10 +30,14 @@ public class CorretoraController {
         return service.buscarPorId(id);
     }
 
-
     @GetMapping("/cnpj/{cnpj}")
     public Corretora buscarPorCnpj(@PathVariable String cnpj) {
 
         return service.buscarPorCnpj(cnpj);
     }
+
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Long id) {
+    service.deletar(id);
+}
 }

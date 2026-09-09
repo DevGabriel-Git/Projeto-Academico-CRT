@@ -1,11 +1,12 @@
 package com.crt.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 public class Acao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @EqualsAndHashCode.Include
@@ -29,6 +30,15 @@ public class Acao {
 
     @ManyToOne
     @JoinColumn(name = "corretora_id")
-    @JsonBackReference
+    @JsonIgnore
     private Corretora corretora;
+
+    @OneToMany(mappedBy = "acao", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Carteira> carteiras = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    @JsonIgnore
+    private Usuario usuario;
 }

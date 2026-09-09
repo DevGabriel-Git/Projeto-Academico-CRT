@@ -1,0 +1,32 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/corretora
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    volumes:
+      - ./data:/app/data
+    networks:
+      - corretora-net
+
+  frontend:
+    build: ./corretora-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - corretora-net
+
+networks:
+  corretora-net:
+    driver: bridge
