@@ -1,3 +1,9 @@
 /target
 *.class
 /.idea
+.env
+/data
+*.log
+node_modules/
+corretora-frontend/.angular/
+corretora-frontend/dist/
