@@ -17,7 +17,13 @@ def check(report, baseline):
         raise ValueError("SARIF sem execução válida")
     failures = []
     for run in data["runs"]:
+        if not isinstance(run.get("results"), list) or not run.get("invocations"):
+            raise ValueError("SARIF sem resultados ou evidencia de execucao")
+        if not all(invocation.get("executionSuccessful") is True for invocation in run["invocations"]):
+            raise ValueError("Execucao CodeQL nao comprovada")
         driver = run["tool"]["driver"]
+        if not driver.get("name") or not isinstance(driver.get("rules"), list):
+            raise ValueError("Metadados da ferramenta ausentes")
         rules = {r["id"]: r for r in driver.get("rules", [])}
         for extension in run["tool"].get("extensions", []):
             rules.update({r["id"]: r for r in extension.get("rules", [])})
@@ -26,7 +32,9 @@ def check(report, baseline):
                 raise ValueError("Execução CodeQL falhou")
         for result in run.get("results", []):
             rule = result["ruleId"]
-            severity = rules.get(rule, {}).get("properties", {}).get("security-severity")
+            if rule not in rules:
+                raise ValueError("Referencia de regra nao resolvida: " + rule)
+            severity = rules[rule].get("properties", {}).get("security-severity")
             if severity is None:
                 if result.get("level", "warning") == "error":
                     failures.append(rule + ": erro sem severidade")

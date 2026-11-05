@@ -1,17 +1,18 @@
 package com.crt.service;
+
 import com.crt.adapter.cep.CepService;
 import com.crt.adapter.cnpj.CnpjService;
 import com.crt.dto.CepResponseDTO;
 import com.crt.dto.CnpjResponseDTO;
 import com.crt.entity.Corretora;
+import com.crt.entity.Usuario;
 import com.crt.repository.CorretoraRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.crt.entity.Usuario;
-import org.springframework.security.core.context.SecurityContextHolder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 @Service
 @RequiredArgsConstructor
 public class CorretoraService {
@@ -20,9 +21,13 @@ public class CorretoraService {
     private final CepService cepService;
     private final CorretoraRepository repository;
     private final com.crt.security.UsuarioAtual usuarioAtual;
-    private Usuario getAuthenticatedUser() { return usuarioAtual.obter(); }
-    public Corretora cadastrar(String cnpj){
-        if (repository.findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId()).isPresent()){
+
+    private Usuario getAuthenticatedUser() {
+        return usuarioAtual.obter();
+    }
+
+    public Corretora cadastrar(String cnpj) {
+        if (repository.findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId()).isPresent()) {
             throw new IllegalArgumentException("CNPJ ja cadastrado");
         }
         CnpjResponseDTO dados = cnpjService.buscar(cnpj);
@@ -45,7 +50,8 @@ public class CorretoraService {
         boolean validada = false;
         try {
 
-            rest.getForObject("https://brasilapi.com.br/api/cvm/corretoras/v1/" + cnpj, String.class);
+            rest.getForObject(
+                    "https://brasilapi.com.br/api/cvm/corretoras/v1/" + cnpj, String.class);
             validada = true;
         } catch (Exception e) {
             org.slf4j.LoggerFactory.getLogger(getClass()).warn("consulta_cvm_indisponivel");
@@ -60,12 +66,24 @@ public class CorretoraService {
         return repository.save(c);
     }
 
-    public List<Corretora> listar() { return repository.findByUsuarioId(getAuthenticatedUser().getId()); }
-    public Corretora buscarPorId(Long id) { return repository.findByIdAndUsuarioId(id, getAuthenticatedUser().getId()) .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
+    public List<Corretora> listar() {
+        return repository.findByUsuarioId(getAuthenticatedUser().getId());
     }
 
-    public Corretora buscarPorCnpj(String cnpj) { return repository.findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId()) .orElseThrow(() -> new RuntimeException("CNPJ não encontrado"));
+    public Corretora buscarPorId(Long id) {
+        return repository
+                .findByIdAndUsuarioId(id, getAuthenticatedUser().getId())
+                .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
     }
 
-    public void deletar(Long id) { Corretora corretora = buscarPorId(id); repository.delete(corretora); }
+    public Corretora buscarPorCnpj(String cnpj) {
+        return repository
+                .findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId())
+                .orElseThrow(() -> new RuntimeException("CNPJ não encontrado"));
+    }
+
+    public void deletar(Long id) {
+        Corretora corretora = buscarPorId(id);
+        repository.delete(corretora);
+    }
 }

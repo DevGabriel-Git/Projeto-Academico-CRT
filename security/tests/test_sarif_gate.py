@@ -11,7 +11,7 @@ class SarifGateTest(unittest.TestCase):
         self.directory=tempfile.TemporaryDirectory(); self.addCleanup(self.directory.cleanup)
         self.report=Path(self.directory.name)/"report.json"; self.baseline=Path(self.directory.name)/"baseline.json"
         self.policy={"version":1,"owner":"test","reviewBy":str(datetime.date.today()+datetime.timedelta(days=1)),"findings":[]}
-        self.data={"version":"2.1.0","runs":[{"tool":{"driver":{"rules":[{"id":"sql","properties":{"security-severity":"9.0"}}]}},"results":[]}]}
+        self.data={"version":"2.1.0","runs":[{"tool":{"driver":{"name":"CodeQL","rules":[{"id":"sql","properties":{"security-severity":"9.0"}}]}},"results":[],"invocations":[{"executionSuccessful":True}]}]}
     def check(self):
         self.baseline.write_text(json.dumps(self.policy));self.report.write_text(json.dumps(self.data));gate.check(self.report,self.baseline)
     def test_empty_success(self): self.check()
@@ -34,4 +34,10 @@ class SarifGateTest(unittest.TestCase):
     def test_missing_report_fails(self):
         self.baseline.write_text(json.dumps(self.policy))
         with self.assertRaises(FileNotFoundError): gate.check(self.report,self.baseline)
+    def test_incomplete_run_fails(self):
+        self.data["runs"]=[{"tool":{"driver":{"name":"CodeQL"}}}]
+        with self.assertRaises(ValueError): self.check()
+    def test_unknown_rule_fails(self):
+        self.data["runs"][0]["results"]=[{"ruleId":"missing","level":"warning"}]
+        with self.assertRaises(ValueError): self.check()
 if __name__=="__main__": unittest.main()

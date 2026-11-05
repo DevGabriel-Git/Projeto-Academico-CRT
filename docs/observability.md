@@ -5,4 +5,6 @@ Métricas HTTP têm histograma por rota normalizada. Objetivos iniciais de labor
 `k6 run -e BASE_URL=http://localhost:8080 -e TOKEN=<token-de-teste> performance/carteira.js` usa somente leitura e reprova limites violados.
 Antes e depois de otimizar, preservar JSON do k6, dataset, hardware e commit; não usar medição sem ambiente comparável.
 Índices por usuário/carteira e EntityGraph evitam carga tardia na serialização. Histórico é buscado por endpoint próprio e não embutido na posição.
-Pendências: paginação das listas, traces OpenTelemetry/JDBC, dashboard Prometheus/Grafana, execução de carga antes/depois e teste de cardinalidade. Não há resultado de desempenho medido nesta adequação.
+OpenTelemetry/JDBC foram adicionados com starter Boot 4 e datasource-micrometer 2.0.1. Perfil observability envia spans OTLP; metricas continuam via Prometheus (push OTLP desabilitado por padrao).
+Smoke executado: 5 usuarios/30s, 12.707 requisicoes, erro 0%, p95 25,48 ms; receptor OTLP confirmou spans HTTP e JDBC em H2 isolado, com usuario ficticio e carteira vazia. Isso nao mede desempenho de producao nem ganho antes/depois.
+LGTM esta preparado em observability/docker-compose.yml, mas o daemon Docker nao estava ativo. Pendencias: paginacao, dashboard e comparacao com dataset realista/mesmo ambiente.

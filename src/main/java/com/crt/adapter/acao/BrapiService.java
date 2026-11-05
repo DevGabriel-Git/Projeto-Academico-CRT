@@ -1,28 +1,47 @@
 package com.crt.adapter.acao;
+
 import com.crt.dto.BrapiResponseDTO;
 import com.crt.entity.Acao;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import java.time.LocalDateTime;
-import java.util.List;
+
 @Service("brapiAcaoService")
 @lombok.RequiredArgsConstructor
 public class BrapiService implements AcaoApi {
     private final RestTemplate rest;
+
     @Value("${brapi.token}")
     private String token;
+
     private List<String> cacheAcoes;
+
     public static class BrapiListResponse {
         private List<Stock> stocks;
-        public List<Stock> getStocks() { return stocks; }
-        public void setStocks(List<Stock> stocks) { this.stocks = stocks; }
+
+        public List<Stock> getStocks() {
+            return stocks;
+        }
+
+        public void setStocks(List<Stock> stocks) {
+            this.stocks = stocks;
+        }
+
         public static class Stock {
             private String stock;
-            public String getStock() { return stock; }
-            public void setStock(String stock) { this.stock = stock; }
+
+            public String getStock() {
+                return stock;
+            }
+
+            public void setStock(String stock) {
+                this.stock = stock;
+            }
         }
     }
+
     public List<String> listarDisponiveis() {
         if (cacheAcoes != null) {
             return cacheAcoes;
@@ -32,13 +51,15 @@ public class BrapiService implements AcaoApi {
         BrapiListResponse response = rest.getForObject(url, BrapiListResponse.class);
 
         if (response != null && response.getStocks() != null) {
-            cacheAcoes = response.getStocks().stream()
-                    .map(BrapiListResponse.Stock::getStock)
-                    .collect(java.util.stream.Collectors.toList());
+            cacheAcoes =
+                    response.getStocks().stream()
+                            .map(BrapiListResponse.Stock::getStock)
+                            .collect(java.util.stream.Collectors.toList());
             return cacheAcoes;
         }
         return java.util.Collections.emptyList();
     }
+
     @Override
     public Acao buscar(String ticker) {
 

@@ -23,12 +23,13 @@ python scripts/context_budget.py
 python -m unittest discover -s security/tests -v
 cd corretora-frontend
 npm ci
-npm test -- --watch=false
+npm run lint
+npm run test:coverage
 npm run build
 ```
 
 Linux/macOS: use `bash mvnw clean verify`. Testes usam H2 isolado, migrações Flyway e nenhum provedor externo.
-`verify` inclui unitários, ArchUnit, integração MockMvc com segurança/banco e JaCoCo mínimo 80% de linhas e ramos.
+`verify` inclui Spotless, Checkstyle, PMD, unitários, ArchUnit, integração MockMvc com segurança/banco e JaCoCo mínimo 80% de linhas e ramos.
 DTOs, entidades com acesso gerado pelo Lombok e bootstrap ficam fora do cálculo; mapeamento/persistência são exercitados na integração.
 O relatório de cobertura é gerado em `target/site/jacoco/index.html`.
 
@@ -64,3 +65,11 @@ GitHub Actions estão preparados, mas a execução remota e a proteção de bran
 
 BrasilAPI (CNPJ/CVM), ViaCEP (endereço), Brapi (Brasil), TwelveData (EUA); adaptador AlphaVantage mantido como alternativa. Clientes usam timeouts e testes substituem a rede.
 Cotação de laboratório não é recomendação de investimento.
+
+
+## Kit da disciplina
+18 skills externas estao fixadas por origem/commit/hash em skills-lock.json. OpenSpec 1.13.2 e Spec Kit 1.0.12 foram inicializados; os comandos OMP estao em .omp/commands. Ferramentas locais ficam em .tools, ignorado pelo Git; versoes em tools/versions.json.
+`python scripts/check_skills.py` verifica a integridade; `python scripts/check_rules.py` executa casos e scan OMP; `python scripts/context_budget.py` mede tokens reais, incluindo descricoes das skills.
+O hook em .githooks/pre-commit executa verify e rastreabilidade. Ative neste clone com `git config core.hooksPath .githooks`.
+Teste de mutacao: `mvnw.cmd -Pmutation test-compile org.pitest:pitest-maven:mutationCoverage`.
+Observabilidade/carga local: `python scripts/smoke_observability.py`; exige k6 e dependencias tools/requirements.txt. Usa banco efemero, credenciais aleatorias, loopback e encerra os processos criados.

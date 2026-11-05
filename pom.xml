@@ -31,6 +31,9 @@
         <spring-cloud.version>2025.1.1</spring-cloud.version>
     </properties>
     <dependencies>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-opentelemetry</artifactId></dependency>
+        <dependency><groupId>net.ttddyy.observation</groupId><artifactId>datasource-micrometer-spring-boot</artifactId><version>2.0.1</version></dependency>
+
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-flyway</artifactId></dependency>
         <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId><scope>runtime</scope></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
@@ -154,9 +157,36 @@
                 </plugin></plugins></configuration>
             </plugin>
         </plugins></build></profile>
+
+        <profile><id>mutation</id><build><plugins><plugin>
+            <groupId>org.pitest</groupId><artifactId>pitest-maven</artifactId><version>1.30.2</version>
+            <dependencies><dependency><groupId>org.pitest</groupId><artifactId>pitest-junit5-plugin</artifactId><version>1.2.3</version></dependency></dependencies>
+            <configuration><targetClasses><param>com.crt.service.CarteiraService</param></targetClasses>
+                <targetTests><param>com.crt.service.CarteiraServiceTest</param></targetTests>
+                <mutationThreshold>80</mutationThreshold><testStrengthThreshold>80</testStrengthThreshold>
+                <threads>2</threads><timestampedReports>false</timestampedReports><outputFormats><param>HTML</param><param>XML</param></outputFormats>
+            </configuration>
+        </plugin></plugins></build></profile>
     </profiles>
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId><artifactId>spotless-maven-plugin</artifactId><version>3.11.0</version>
+                <configuration><java><googleJavaFormat><version>1.24.0</version><style>AOSP</style></googleJavaFormat><removeUnusedImports/></java></configuration>
+                <executions><execution><goals><goal>check</goal></goals><phase>validate</phase></execution></executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId><artifactId>maven-checkstyle-plugin</artifactId><version>3.6.0</version>
+                <configuration><configLocation>quality/checkstyle.xml</configLocation><includeTestSourceDirectory>true</includeTestSourceDirectory><failOnViolation>true</failOnViolation></configuration>
+                <executions><execution><phase>validate</phase><goals><goal>check</goal></goals></execution></executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId><artifactId>maven-pmd-plugin</artifactId><version>3.28.0</version>
+                <configuration><rulesets><ruleset>quality/pmd.xml</ruleset></rulesets><printFailingErrors>true</printFailingErrors><failOnViolation>true</failOnViolation><linkXRef>false</linkXRef></configuration>
+                <executions><execution><phase>verify</phase><goals><goal>check</goal></goals></execution></executions>
+            </plugin>
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId><artifactId>maven-failsafe-plugin</artifactId>
                 <executions><execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution></executions>

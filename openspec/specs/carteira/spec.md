@@ -66,3 +66,19 @@ O sistema SHALL rejeitar preço não positivo, cotação ausente e acesso a hist
 - **GIVEN** uma carteira privada
 - **WHEN** outra pessoa consulta seu histórico
 - **THEN** o recurso não é encontrado e o histórico não é consultado
+
+### Requirement: Precisao monetaria
+O sistema SHALL rejeitar preco explicito com mais de duas casas decimais, antes de persistir a operacao.
+
+#### Scenario: Precisao monetaria nao suportada
+- **GIVEN** uma compra autorizada de dez unidades
+- **WHEN** o titular informa preco unitario 0.001
+- **THEN** a resposta e 400 e nenhuma posicao ou historico e gravado
+
+### Requirement: CSRF e autenticacao explicita
+O sistema SHALL preservar a protecao CSRF para requisicoes com cookie sem Bearer; operacoes autenticadas por Bearer e login/cadastro JSON continuam acessiveis conforme seu contrato.
+
+#### Scenario: Cookie sem Bearer nao dispensa CSRF
+- **GIVEN** uma requisicao com cookie de sessao e sem cabecalho Bearer
+- **WHEN** o cliente tenta operar a carteira
+- **THEN** a resposta e 403 e nenhuma posicao e persistida

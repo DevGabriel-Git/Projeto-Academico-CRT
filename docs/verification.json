@@ -1,0 +1,60 @@
+{
+  "coverage": {
+    "BRANCH": {
+      "covered": 82,
+      "missed": 8,
+      "percent": 91.11
+    },
+    "LINE": {
+      "covered": 380,
+      "missed": 19,
+      "percent": 95.24
+    }
+  },
+  "surefire-reports": 43,
+  "failsafe-reports": 11,
+  "date": "2026-11-05",
+  "project": "Projeto-Academico-CRT",
+  "reference": "a54c35fd28508355aa992ae3bc30f0fa07da9140",
+  "mutation": {
+    "generated": 39,
+    "killed": 39,
+    "scope": "CarteiraService"
+  },
+  "frontend": {
+    "tests": 11,
+    "coverageAuthBoundaryPercent": 100,
+    "globalCoverageClaimed": false
+  },
+  "securityGateTests": 12,
+  "loopTests": 7,
+  "ruleCases": 10,
+  "externalSkills": 18,
+  "openspecScenarios": 12,
+  "codeql": {
+    "version": "2.27.4",
+    "languages": [
+      "java",
+      "javascript-typescript"
+    ],
+    "threshold": 7.0,
+    "gate": "passed",
+    "baselineFindings": 0
+  },
+  "load": {
+    "users": 5,
+    "seconds": 30,
+    "requests": 12707,
+    "errorRate": 0,
+    "p95Ms": 25.48628,
+    "database": "isolated H2, empty portfolio"
+  },
+  "publicationPreflight": {
+    "status": "blocked",
+    "reason": "NVD_API_KEY absent"
+  },
+  "externalAgent": {
+    "status": "not activated",
+    "reason": "automatic approval rejected unapproved code export destination"
+  }
+}

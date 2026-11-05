@@ -8,6 +8,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+from toolchain import command, query_paths, VERSIONS
 
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
@@ -21,28 +22,26 @@ def run(args, cwd=ROOT, capture=False):
 
 
 def tool(name):
-    local = ROOT / ".tools" / "gitleaks" / ("gitleaks.exe" if os.name == "nt" else "gitleaks")
-    path = str(local) if name == "gitleaks" and local.is_file() else shutil.which(name)
-    if not path:
-        raise RuntimeError(f"Ferramenta obrigatória ausente: {name}")
-    return path
+    return command(name)[0]
 
 
 def setup():
     for name in ("git", "java", "node", "npm", "gitleaks", "codeql"):
-        tool(name)
-    if "8.30.1" not in run([tool("gitleaks"), "version"], capture=True):
-        raise RuntimeError("Instale Gitleaks 8.30.1, versão usada na aula")
-    if not run([tool("node"), "--version"], capture=True).startswith("v24."):
-        raise RuntimeError("Node 24 LTS obrigatório")
-    if sys.version_info[:2] != (3, 11):
-        raise RuntimeError("Python 3.11 obrigatório")
-    # O bundle e os packs precisam existir; ausência não é aprovada silenciosamente.
-    packs = run([tool("codeql"), "resolve", "qlpacks", "--format=json"], capture=True)
-    for pack in ("codeql/java-queries", "codeql/javascript-queries"):
-        if pack not in packs:
-            raise RuntimeError(f"Query pack ausente: {pack}")
-    print("Ferramentas presentes; versões adicionais no security/README.md")
+        command(name)
+    if VERSIONS["gitleaks"] not in run(command("gitleaks") + ["version"], capture=True):
+        raise RuntimeError("Versao Gitleaks diverge de tools/versions.json")
+    version=json.loads(run(command("codeql") + ["version","--format=json"],capture=True))
+    if version["version"] != VERSIONS["codeql"]:
+        raise RuntimeError("Versao CodeQL diverge do lock")
+    java=subprocess.run(command("java") + ["-version"],capture_output=True,text=True,check=True)
+    if not re.search(r'version "21\.',java.stderr+java.stdout):
+        raise RuntimeError("Java 21 obrigatorio")
+    if not run(command("node") + ["--version"],capture=True).startswith("v24."):
+        raise RuntimeError("Node 24 LTS obrigatorio")
+    if sys.version_info[:2] != (3,11):
+        raise RuntimeError("Python 3.11 obrigatorio")
+    query_paths()
+    print("Ferramentas e packs fixados presentes")
 
 
 def publishable():
@@ -52,6 +51,8 @@ def publishable():
 
 def main(base):
     setup()
+    if not os.environ.get("NVD_API_KEY"):
+        raise RuntimeError("NVD_API_KEY obrigatoria para o preflight integral")
     sha = run([tool("git"), "merge-base", "HEAD", base], capture=True).strip()
     head = run([tool("git"), "rev-parse", "HEAD"], capture=True).strip()
     run([tool("git"), "diff", "--check", sha])
@@ -90,12 +91,17 @@ def main(base):
         # Executar ambos os módulos é um superset seguro da seleção por diff.
         run([mvn, "-B", "-ntp", "clean", "verify"])
         run([sys.executable, "scripts/check_traceability.py"])
+        run([sys.executable, "scripts/context_budget.py"])
+        run([sys.executable, "scripts/check_rules.py"])
+        run([sys.executable, "-m", "unittest", "discover", "-s", "security/tests", "-v"])
+        run([sys.executable, "-m", "unittest", "discover", "-s", "scripts/tests", "-v"])
         run([sys.executable, "scripts/check_diff_coverage.py", base])
         run([tool("npx"), "--yes", "@fission-ai/openspec@1.13.2", "validate", "--all", "--strict"])
         frontend = ROOT / "corretora-frontend"
         npm = tool("npm")
         run([npm, "ci", "--no-fund", "--no-audit"], cwd=frontend)
-        run([npm, "test", "--", "--watch=false"], cwd=frontend)
+        run([npm, "run", "lint"], cwd=frontend)
+        run([npm, "run", "test:coverage"], cwd=frontend)
         run([npm, "run", "build"], cwd=frontend)
         # Runtime high/critical, build critical. npm audit retorna 1 para achados;
         # outros códigos e JSON sem metadados são falha de infraestrutura.
@@ -110,20 +116,7 @@ def main(base):
         if not os.environ.get("NVD_API_KEY"):
             raise RuntimeError("NVD_API_KEY obrigatória para SCA backend")
         run([mvn, "-B", "-ntp", "-Psecurity", "org.owasp:dependency-check-maven:check"])
-        for language, pack in (("java", "java"), ("javascript-typescript", "javascript")):
-            database = Path(temporary) / pack
-            args = [tool("codeql"), "database", "create", database, "--language=" + language,
-                    "--source-root=" + str(ROOT), "--codescanning-config=security-policy/codeql-config.yml"]
-            if pack == "java":
-                build = [str(mvn), "-B", "-ntp", "-DskipTests", "clean", "package"]
-                args.append("--command=" + (subprocess.list2cmdline(build) if os.name == "nt" else shlex.join(build)))
-            run(args)
-            report = reports / (pack + ".sarif")
-            run([tool("codeql"), "database", "analyze", database,
-                 f"codeql/{pack}-queries:codeql-suites/{pack}-security-extended.qls",
-                 f"codeql/{pack}-queries:codeql-suites/{pack}-security-and-quality.qls",
-                 "--format=sarif-latest", "--output=" + str(report)])
-            run([sys.executable, "security/sarif_gate.py", report, "security-policy/codeql-baseline.json"])
+        run([sys.executable, "scripts/run_codeql.py"])
     print(f"EVIDÊNCIA: base={sha} head={head} gates=ci,sca,secrets,sast resultado=APROVADO")
 
 

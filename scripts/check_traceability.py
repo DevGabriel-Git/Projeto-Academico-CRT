@@ -1,6 +1,7 @@
 """Valida rastreabilidade explícita entre cenários e métodos de teste reais."""
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -8,8 +9,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     mapping = json.loads((ROOT / "specs/traceability.json").read_text(encoding="utf-8"))
-    scenarios = set(re.findall(r"#### Scenario: (.+)", (ROOT / "openspec/specs/carteira/spec.md").read_text(encoding="utf-8")))
-    if scenarios != set(mapping):
+    folders = [ROOT / p for p in sys.argv[1:]] or [ROOT / "openspec/specs"]
+    scenarios = set()
+    for folder in folders:
+        if not folder.is_dir():
+            raise SystemExit(f"Pasta de specs ausente: {folder}")
+        for spec in folder.rglob("spec.md"):
+            scenarios.update(re.findall(r"#### Scenario: (.+)", spec.read_text(encoding="utf-8")))
+    if not scenarios or not scenarios.issubset(mapping):
         raise SystemExit("Cenários e mapa de rastreabilidade divergem")
     for scenario, reference in mapping.items():
         filename, method = reference.split("#")

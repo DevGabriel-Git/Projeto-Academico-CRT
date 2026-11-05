@@ -12,6 +12,7 @@ public class BrasilApiCnpjService implements CnpjService {
 
     @Override
     public CnpjResponseDTO buscar(String cnpj) {
-        return rest.getForObject("https://brasilapi.com.br/api/cnpj/v1/" + cnpj, CnpjResponseDTO.class);
+        return rest.getForObject(
+                "https://brasilapi.com.br/api/cnpj/v1/" + cnpj, CnpjResponseDTO.class);
     }
 }

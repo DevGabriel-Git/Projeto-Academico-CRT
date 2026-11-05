@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "skills": {
+    "code-review": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/code-review/SKILL.md",
+      "ref": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "computedHash": "3a2fce4a4800ae0990bc747f11873d99323ad38419650d4b54176089ee41a26b"
+    },
+    "codebase-design": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/codebase-design/SKILL.md",
+      "ref": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "computedHash": "354082048af0c5acc2bf91cd255b972f89a143af3a1976e030bddea5fc8bda40"
+    },
+    "improve-codebase-architecture": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "ref": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "computedHash": "1770148088ee812a94d170fee227bbe4b8a441ca755fb58d639f28e4a47dc731"
+    },
+    "domain-modeling": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/domain-modeling/SKILL.md",
+      "ref": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "computedHash": "332c4e23360e692a488fa25fe878596f91e4eaf125f48ea280dca151f3798eaa"
+    },
+    "grilling": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grilling/SKILL.md",
+      "ref": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "computedHash": "18b9d1dd1fdb188537127a116731b819c45aa8c06a6cf337c5bf88c4fec467be"
+    },
+    "tdd": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/tdd/SKILL.md",
+      "ref": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "computedHash": "03b4f1efd6942745e29425adee421d2308c464cff51e939d1b18df7b4eb96461"
+    },
+    "code-simplifier": {
+      "source": "aktsmm/agent-skills",
+      "sourceType": "github",
+      "skillPath": "code-simplifier/SKILL.md",
+      "ref": "b6d2e8b76a6f295c3f43d856726a0063d39c9bb3",
+      "computedHash": "73bc430e20b46ad8ac8fcf6736fdae59386a9f3042c787efc9bf56a85b381c0b"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "ref": "cabe07254cddf16a3a650253f0ba03d543d8a86e",
+      "computedHash": "1df2204acb101e822b85afac8f8b0e7b2042ccda4aae851014b57f8e775392ea"
+    },
+    "solid": {
+      "source": "ramziddin/solid-skills",
+      "sourceType": "github",
+      "skillPath": "skills/solid/SKILL.md",
+      "ref": "94978c9cb06da1cb643ee4fe8a83bc8bac97c0a8",
+      "computedHash": "416ab78a557b66d4b2a2f2af57753041e70afd3f569003dce52b40e2721ba710"
+    },
+    "gof-patterns": {
+      "source": "grndlvl/software-patterns",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/gof-patterns/SKILL.md",
+      "ref": "85e94a3bc19e9063a51b12289bb027a8bfbb13e8",
+      "computedHash": "292333068f558be95e29f3c2de898ca3f246a716f8b7552cdf8b0ec3c7b5d8f5"
+    },
+    "design-pattern-review": {
+      "source": "sirius-zuo/design-pattern-skill",
+      "sourceType": "github",
+      "skillPath": "design-pattern-review/SKILL.md",
+      "ref": "66d7815881b956f799bce124a8deb7b8fbba5ccc",
+      "computedHash": "f2d1c69c69e7151ba865491340bd850c6068c0819ae63870ffa736f3d8b95aed"
+    },
+    "context-engineering": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/context-engineering/SKILL.md",
+      "ref": "301b02b12bff98e4688e6984af6556802322bbde",
+      "computedHash": "9c0faed3fae338137429b40fa4f4f4278e8eec40ef81b6cf29c29a96ae1d83a9"
+    },
+    "security-and-hardening": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/security-and-hardening/SKILL.md",
+      "ref": "301b02b12bff98e4688e6984af6556802322bbde",
+      "computedHash": "3836bf2014be4d89a828e0fdb16194a4abf23fdcf76cd66219c43fdf25b7507e"
+    },
+    "observability-and-instrumentation": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/observability-and-instrumentation/SKILL.md",
+      "ref": "301b02b12bff98e4688e6984af6556802322bbde",
+      "computedHash": "50dbe381c6f89b1fe5296d9e62a2714ba89aafc3793ed84bead393d10c9ca401"
+    },
+    "performance-optimization": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/performance-optimization/SKILL.md",
+      "ref": "301b02b12bff98e4688e6984af6556802322bbde",
+      "computedHash": "a38b12f869249634f158c001a811af93062aac076cb5e215deb1bddbf7e37b4c"
+    },
+    "harness-creator": {
+      "source": "walkinglabs/learn-harness-engineering",
+      "sourceType": "github",
+      "skillPath": "skills/harness-creator/SKILL.md",
+      "ref": "a9342ff471f2c0e60be0c08b9f4a7c502df4e442",
+      "computedHash": "76f9505142cb44b5836c05775c41e89249528e73ad811c2cab6905107ebc6b8f"
+    },
+    "agentic-actions-auditor": {
+      "source": "trailofbits/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/agentic-actions-auditor/skills/agentic-actions-auditor/SKILL.md",
+      "ref": "470419e16f97e112d01fc32f4898aea1755015d9",
+      "computedHash": "2021bd2d1d0ad8de7d7f2acb50a3336bdd760d2406ab8afaa854f63b8a9d2ca6"
+    },
+    "clean-code": {
+      "source": "sickn33/agentic-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/clean-code/SKILL.md",
+      "ref": "739c841480587361c3cb2047f5b34cdca69a0623",
+      "computedHash": "c65239234698f60c22d6f12a191afcaee3fae5f6c5d386c71730cc2781826df7"
+    }
+  },
+  "hashAlgorithm": "sha256-path-nul-content-lf-v1"
+}

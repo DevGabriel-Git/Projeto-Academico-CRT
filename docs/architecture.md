@@ -23,4 +23,4 @@ Não foi feita migração de dados do usuário nesta adequação.
 ## Revisão
 
 ArchUnit impede entidade depender de serviço/controller/adaptador e impede repository depender de serviço/controller.
-Dívida preservada e identificada: endpoints antigos ainda retornam entidades; avaliar DTOs públicos com contratos de frontend antes de alterar. Listas ainda não são paginadas. CVM indisponível continua significando `validadaNaCvm=false`; isso não prova irregularidade da corretora.
+Os endpoints passam por application services que montam records publicos e preservam o contrato Angular, conforme ADR 004. Listas ainda não são paginadas. CVM indisponível continua significando `validadaNaCvm=false`; isso não prova irregularidade da corretora.

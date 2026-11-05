@@ -2,11 +2,11 @@ package com.crt.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 @Entity
 @Getter
@@ -19,8 +19,7 @@ public class Acao {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @EqualsAndHashCode.Include
-    private String ticker;
+    @EqualsAndHashCode.Include private String ticker;
 
     private String nomeEmpresa;
     private String mercado;

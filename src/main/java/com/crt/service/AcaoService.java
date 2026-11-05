@@ -1,16 +1,16 @@
 package com.crt.service;
+
 import com.crt.adapter.acao.BrapiService;
-import com.crt.adapter.acao.TwelveService;
 import com.crt.entity.Acao;
 import com.crt.entity.Corretora;
+import com.crt.entity.Usuario;
 import com.crt.repository.AcaoRepository;
 import com.crt.repository.CorretoraRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.crt.entity.Usuario;
-import org.springframework.security.core.context.SecurityContextHolder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 @Service
 @RequiredArgsConstructor
 public class AcaoService {
@@ -19,21 +19,31 @@ public class AcaoService {
     private final CotacaoService cotacaoService;
     private final CorretoraRepository corretoraRepository;
     private final com.crt.security.UsuarioAtual usuarioAtual;
-    private Usuario getAuthenticatedUser() { return usuarioAtual.obter(); }
+
+    private Usuario getAuthenticatedUser() {
+        return usuarioAtual.obter();
+    }
+
     public Acao cadastrar(String ticker, String mercado, String cnpj) {
-        if (repository.findByTickerAndUsuarioId(ticker, getAuthenticatedUser().getId()).isPresent()) {
+        if (repository
+                .findByTickerAndUsuarioId(ticker, getAuthenticatedUser().getId())
+                .isPresent()) {
             throw new RuntimeException("Ticker já cadastrado: " + ticker);
         }
-        Corretora corretora = corretoraRepository.findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId())
-                .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
+        Corretora corretora =
+                corretoraRepository
+                        .findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId())
+                        .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
         Acao acao = cotacaoService.buscar(mercado, ticker);
         acao.setCorretora(corretora); // <-- associa a corretora
         acao.setUsuario(getAuthenticatedUser());
         return repository.save(acao);
     }
+
     public List<Acao> listar() {
         return repository.findByUsuarioId(getAuthenticatedUser().getId());
     }
+
     public List<com.crt.dto.AcaoDisponivelDTO> listarDisponiveis() {
         List<String> brapiList = brapiAcaoService.listarDisponiveis();
         List<com.crt.dto.AcaoDisponivelDTO> result = new java.util.ArrayList<>();
@@ -51,14 +61,19 @@ public class AcaoService {
 
         return result;
     }
+
     public Acao buscarPorId(Long id) {
-        return repository.findByIdAndUsuarioId(id, getAuthenticatedUser().getId())
+        return repository
+                .findByIdAndUsuarioId(id, getAuthenticatedUser().getId())
                 .orElseThrow(() -> new RuntimeException("Ação não encontrada"));
     }
+
     public Acao buscarPorTicker(String ticker) {
-        return repository.findByTickerAndUsuarioId(ticker, getAuthenticatedUser().getId())
+        return repository
+                .findByTickerAndUsuarioId(ticker, getAuthenticatedUser().getId())
                 .orElseThrow(() -> new RuntimeException("Ticker não encontrado"));
     }
+
     public Acao atualizarCotacao(Long id) {
         Acao acao = buscarPorId(id);
         Acao atualizada = cotacaoService.buscar(acao.getMercado(), acao.getTicker());

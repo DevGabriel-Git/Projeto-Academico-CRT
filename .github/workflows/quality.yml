@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   backend:
+    name: Backend
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -28,7 +29,9 @@ jobs:
           node-version: '24'
       - run: bash mvnw -B -ntp clean verify
       - run: python3 scripts/check_traceability.py
+      - run: python3 -m pip install -r tools/requirements.txt
       - run: python3 scripts/context_budget.py
+      - run: python3 scripts/check_skills.py
       - name: Diff coverage
         if: github.event_name == 'pull_request'
         env:
@@ -39,6 +42,7 @@ jobs:
           OPENSPEC_TELEMETRY: '0'
         run: npx --yes @fission-ai/openspec@1.13.2 validate --all --strict
       - run: python3 -m unittest discover -s security/tests -v
+      - run: python3 -m unittest discover -s scripts/tests -v
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -49,6 +53,7 @@ jobs:
             target/site/jacoco
           if-no-files-found: error
   frontend:
+    name: Frontend
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -65,5 +70,6 @@ jobs:
           cache: npm
           cache-dependency-path: corretora-frontend/package-lock.json
       - run: npm ci --no-audit --no-fund
-      - run: npm test -- --watch=false
+      - run: npm run lint
+      - run: npm run test:coverage
       - run: npm run build

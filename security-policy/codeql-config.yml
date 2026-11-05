@@ -8,3 +8,11 @@ paths-ignore:
   - '**/target/**'
   - '**/dist/**'
   - '**/.angular/**'
+  # Ferramentas locais e skills vendorizadas nao integram o produto publicado.
+  - '**/.tools/**'
+  - '.agents/skills/**'
+
+# Todo o codigo executavel do produto; ferramentas ficam fora da extracao JS.
+paths:
+  - src
+  - corretora-frontend/src

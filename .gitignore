@@ -12,3 +12,6 @@ reports/
 .tools/
 __pycache__/
 *.pyc
+
+.loop/*.log
+corretora-frontend/coverage/

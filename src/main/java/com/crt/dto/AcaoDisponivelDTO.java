@@ -9,8 +9,19 @@ public class AcaoDisponivelDTO {
         this.mercado = mercado;
     }
 
-    public String getTicker() { return ticker; }
-    public void setTicker(String ticker) { this.ticker = ticker; }
-    public String getMercado() { return mercado; }
-    public void setMercado(String mercado) { this.mercado = mercado; }
+    public String getTicker() {
+        return ticker;
+    }
+
+    public void setTicker(String ticker) {
+        this.ticker = ticker;
+    }
+
+    public String getMercado() {
+        return mercado;
+    }
+
+    public void setMercado(String mercado) {
+        this.mercado = mercado;
+    }
 }
