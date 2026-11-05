@@ -41,9 +41,9 @@ import { AuthService } from '../../services/auth.service';
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Senha</label>
-            <input type="password" [(ngModel)]="user.senha" name="senha" required
+            <input type="password" [(ngModel)]="user.senha" name="senha" required minlength="12" maxlength="72"
                    class="w-full bg-slate-50 dark:bg-[#0a0b0e] border border-orange-200 dark:border-[#1e2330] rounded-lg px-4 py-3 text-slate-800 dark:text-white text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
-                   placeholder="Crie uma senha forte" />
+                   placeholder="Mínimo de 12 caracteres" />
           </div>
 
           <div *ngIf="error" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm border border-red-200 dark:border-red-800/30">

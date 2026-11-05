@@ -1,162 +1,66 @@
-## CRT — Sistema de Gestão de Ações
+# CRT — Sistema de Gestão de Ações
 
-Trabalho desenvolvido para a disciplina de **Sistemas da Informação** na **UniFEF**, sob orientação do professor **Jefferson**.
+Projeto acadêmico da UniFEF, disciplina de Sistemas da Informação, professor Jefferson.
+Autores: Gabriel Pereira, Rian Araújo e Paulo Candido.
 
-**Grupo:**
-- Gabriel Pereira
-- Rian Araújo
-- Paulo Candido
+API de corretoras, ações, carteira e histórico privado por usuário; frontend Angular.
+A adequação ao curso está detalhada em [docs/adequacao-curso.md](docs/adequacao-curso.md), com evidências e pendências por módulo.
 
----
+## Ambiente
 
-## Sobre o projeto
+Java 21, Maven Wrapper 3.9.14, Node 24 LTS e npm. Backend Spring Boot 4; Angular 21.
+As ferramentas do curso são adaptadas à aplicação existente; o catálogo de referência não substitui o domínio da corretora.
 
-O CRT é uma API REST desenvolvida em Java com Spring Boot que simula um sistema de gestão de ações do mercado financeiro. A ideia central foi criar algo que vai além de um simples CRUD — o sistema conversa com APIs externas reais para buscar dados de empresas, endereços e cotações de ações, tanto do mercado brasileiro quanto do americano.
+## Verificar
 
-Durante o desenvolvimento, nos preocupamos em organizar o código em camadas bem definidas e isolar as integrações externas usando interfaces, o que facilita muito a manutenção e a troca de fornecedores de API no futuro.
+Na raiz, Windows PowerShell:
 
----
-
-## Como rodar o projeto
-
-**Pré-requisitos:**
-- Java 17+
-- Maven
-- IntelliJ IDEA (ou qualquer IDE de sua preferência)
-
-**Passos:**
-
-1. Clone o repositório
-2. Abra o projeto na IDE
-3. Configure as chaves de API no `application.properties` (veja a seção abaixo)
-4. Rode a classe principal
-5. Acesse `http://localhost:8080`
-
-O banco de dados utilizado é o **H2 em memória**, então não precisa configurar nada extra — sobe junto com a aplicação.
-
----
-
-## Configuração das chaves de API
-
-No arquivo `src/main/resources/application.properties`, adicione:
-
-```properties
-brapi.token=SEU_TOKEN_BRAPI
-alphavantage.key=SUA_KEY_ALPHAVANTAGE
-twelvedata.key=SUA_KEY_TWELVEDATA
+```powershell
+.\mvnw.cmd clean verify
+python scripts/check_traceability.py
+python scripts/check_diff_coverage.py HEAD
+python scripts/context_budget.py
+python -m unittest discover -s security/tests -v
+cd corretora-frontend
+npm ci
+npm test -- --watch=false
+npm run build
 ```
 
-Cada chave é gratuita e pode ser obtida nos sites listados na seção de APIs.
+Linux/macOS: use `bash mvnw clean verify`. Testes usam H2 isolado, migrações Flyway e nenhum provedor externo.
+`verify` inclui unitários, ArchUnit, integração MockMvc com segurança/banco e JaCoCo mínimo 80% de linhas e ramos.
+DTOs, entidades com acesso gerado pelo Lombok e bootstrap ficam fora do cálculo; mapeamento/persistência são exercitados na integração.
+O relatório de cobertura é gerado em `target/site/jacoco/index.html`.
 
----
+## Executar localmente
 
-## APIs externas utilizadas
+Configure variáveis de ambiente da sessão com base em `.env.example`.
+`JWT_SECRET` deve ser Base64 de pelo menos 32 bytes aleatórios; gere com um gerenciador de segredos ou `SecureRandom`. Nunca use chave de teste em produção.
+`BRAPI_TOKEN`, `TWELVEDATA_KEY` e `ALPHAVANTAGE_KEY` são credenciais externas.
+Spring não carrega `.env` automaticamente; Docker Compose usa esse arquivo, e execução pela IDE/terminal exige exportar as variáveis na configuração da execução.
 
-### 1. BrasilAPI — Consulta de CNPJ
-- **Site:** https://brasilapi.com.br
-- **Uso:** Buscamos os dados cadastrais da corretora (razão social, nome fantasia, CEP, UF) a partir do CNPJ informado.
-- **Autenticação:** Não requer chave de API.
-- **Limitações:** Pode apresentar instabilidade em horários de pico. Dados dependem da base da Receita Federal.
-
-### 2. ViaCEP — Consulta de endereço
-- **Site:** https://viacep.com.br
-- **Uso:** A partir do CEP retornado pela consulta de CNPJ, buscamos o logradouro, bairro e cidade da corretora.
-- **Autenticação:** Não requer chave de API.
-- **Limitações:** Cobre apenas CEPs brasileiros. Alguns CEPs comerciais retornam campos vazios.
-
-### 3. brapi.dev — Cotação de ações brasileiras
-- **Site:** https://brapi.dev
-- **Uso:** Consultamos a cotação atual de ações negociadas na B3 (ex: PETR4, VALE3) a partir do ticker informado.
-- **Autenticação:** Requer token gratuito cadastrado no site.
-- **Limitações:** Plano gratuito tem limite de requisições mensais. Cotações podem ter pequeno delay.
-
-### 4. Twelve Data — Cotação de ações americanas
-- **Site:** https://twelvedata.com
-- **Uso:** Consultamos a cotação de ações negociadas na NYSE e NASDAQ (ex: AAPL, GOOGL).
-- **Autenticação:** Requer chave de API gratuita.
-- **Limitações:** Plano gratuito permite 8 requisições por minuto e 800 por dia.
-
-### 5. Alpha Vantage — Cotação de ações americanas (fallback)
-- **Site:** https://alphavantage.co
-- **Uso:** Utilizado como alternativa ao Twelve Data quando este falha ou atinge o limite de requisições.
-- **Autenticação:** Requer chave de API gratuita.
-- **Limitações:** Plano gratuito permite 25 requisições por dia. Pode ter delay de resposta.
-
----
-
-## Arquitetura do projeto
-
-O projeto segue uma arquitetura em camadas, separando bem as responsabilidades de cada parte do sistema:
-
-```
-com.crt
-├── adapter         # Integrações com APIs externas (isoladas por interfaces)
-│   ├── cep
-│   ├── cnpj
-│   └── acao
-├── controller      # Endpoints REST
-├── dto             # Objetos de transferência de dados
-├── entity          # Entidades do banco de dados
-├── exception       # Tratamento centralizado de erros
-├── repository      # Acesso ao banco de dados
-└── service         # Regras de negócio
+```powershell
+.\mvnw.cmd spring-boot:run '-Dspring-boot.run.profiles=dev'
 ```
 
-Uma decisão importante que tomamos foi usar **interfaces nos adapters** — por exemplo, `CepService`, `CnpjService` e `AcaoApiService`. Isso garante que, se precisarmos trocar uma API por outra, basta criar uma nova implementação sem mexer no resto do sistema. Esse é o padrão **Adapter**, aplicado justamente para isolar os serviços de terceiros.
+Perfil `dev`: H2 em arquivo `data/corretora-dev`, API na porta 8080, console H2 desabilitado.
+Em outro terminal: `cd corretora-frontend`, `npm start -- --proxy-config proxy.conf.json`; frontend na porta 4200.
+Swagger: `/swagger-ui/index.html`; autenticação `/auth/register` e `/auth/login`; health `/actuator/health`.
+Cadastro exige senha entre 12 e 72 caracteres. Operações de compra/venda exigem quantidade positiva; preço omitido usa a cotação atual.
 
----
+## Banco e produção
 
-## Endpoints disponíveis
+Perfil `prod` usa PostgreSQL: `DB_URL`, `DB_USER`, `DB_PASSWORD`. Flyway versiona schema; Hibernate usa `validate`.
+V1 serve para banco novo. Banco legado precisa de backup, reconciliação de colunas/índices/restrições/sequências e baseline revisado antes de atualizar. Nunca apague dados para fazer a migração passar.
+Docker backend usa build em duas etapas, Java 21 e usuário sem privilégio. O compose continua usando PostgreSQL do host e exige `.env` local. Porta de gestão 9090 deve permanecer interna.
 
-### Corretoras
+## Segurança e publicação
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/corretoras?cnpj={cnpj}` | Cadastra uma corretora pelo CNPJ |
-| GET | `/corretoras` | Lista todas as corretoras |
-| GET | `/corretoras/{id}` | Busca corretora por ID |
-| GET | `/corretoras/cnpj/{cnpj}` | Busca corretora por CNPJ |
+`python tools/preflight.py origin/main` executa o portão integral e falha quando ferramenta/credencial/relatório está ausente. Use a base real se o branch principal tiver outro nome.
+Não há autorização de publicação nesta entrega: há achados históricos de credenciais e verificações externas pendentes. Consulte [security/README.md](security/README.md).
+GitHub Actions estão preparados, mas a execução remota e a proteção de branch exigem configuração no repositório.
 
-### Ações
+## Integrações
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/acoes?ticker={ticker}&mercado={mercado}` | Cadastra uma ação (mercado: BR ou EUA) |
-| GET | `/acoes` | Lista todas as ações |
-| GET | `/acoes/{id}` | Busca ação por ID |
-| GET | `/acoes/ticker/{ticker}` | Busca ação por ticker |
-| PUT | `/acoes/{id}/atualizar-cotacao` | Atualiza a cotação de uma ação |
-
----
-
-## Tratamento de erros
-
-O sistema possui tratamento centralizado de erros via `@RestControllerAdvice`. Todos os erros retornam um JSON padronizado:
-
-```json
-{
-    "status": 400,
-    "message": "CNPJ já cadastrado",
-    "timestamp": "2026-04-28T21:00:00"
-}
-```
-
-Cenários tratados:
-- CNPJ já cadastrado
-- Ticker já cadastrado
-- Corretora não encontrada
-- Ação não encontrada
-- Falha na comunicação com APIs externas
-- Mercado inválido (diferente de BR ou EUA)
-
----
-
-## Tecnologias utilizadas
-
-- Java 17
-- Spring Boot
-- Spring Data JPA
-- H2 Database
-- Lombok
-- RestTemplate
-- Maven
+BrasilAPI (CNPJ/CVM), ViaCEP (endereço), Brapi (Brasil), TwelveData (EUA); adaptador AlphaVantage mantido como alternativa. Clientes usam timeouts e testes substituem a rede.
+Cotação de laboratório não é recomendação de investimento.

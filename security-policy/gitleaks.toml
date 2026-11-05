@@ -1,0 +1,3 @@
+title = "Corretora — regras padrão, sem supressões gerais"
+[extend]
+useDefault = true

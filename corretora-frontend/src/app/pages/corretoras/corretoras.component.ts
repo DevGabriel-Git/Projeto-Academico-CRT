@@ -59,7 +59,7 @@ import { Corretora } from '../../models/models';
                     {{ c.validadaNaCvm ? 'Validada' : 'Pendente' }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-slate-500 text-xs">{{ c.acoes?.length || 0 }} ações</td>
+                <td class="px-4 py-3 text-slate-500 text-xs">{{ c.acoes.length || 0 }} ações</td>
                 <td class="px-4 py-3 text-right">
                   <button (click)="confirmarDelete(c)"
                           class="text-slate-600 hover:text-red-400 transition-colors text-sm">

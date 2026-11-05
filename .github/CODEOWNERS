@@ -1,0 +1,9 @@
+# Configurar no GitHub regra de proteção exigindo revisão destes donos.
+/pom.xml @DevGabriel-Git
+/.github/ @DevGabriel-Git
+/.agents/ @DevGabriel-Git
+/.specify/ @DevGabriel-Git
+/AGENTS.md @DevGabriel-Git
+/security/ @DevGabriel-Git
+/security-policy/ @DevGabriel-Git
+/tools/ @DevGabriel-Git

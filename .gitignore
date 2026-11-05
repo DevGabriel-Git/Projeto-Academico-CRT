@@ -7,3 +7,8 @@
 node_modules/
 corretora-frontend/.angular/
 corretora-frontend/dist/
+
+reports/
+.tools/
+__pycache__/
+*.pyc

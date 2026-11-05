@@ -1,0 +1,10 @@
+name: Corretora security
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+paths-ignore:
+  # Apenas dependências, build e relatórios gerados.
+  - '**/node_modules/**'
+  - '**/target/**'
+  - '**/dist/**'
+  - '**/.angular/**'
