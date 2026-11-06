@@ -22,11 +22,13 @@
     "scope": "CarteiraService"
   },
   "frontend": {
-    "tests": 29,
+    "tests": 51,
     "coverageAuthBoundaryPercent": 100,
     "globalCoverageClaimed": false,
-    "initialBundleKB": 413.49,
-    "coverageScope": "auth.service, auth.guard, admin.guard, auth.interceptor"
+    "initialBundleKB": 442.93,
+    "coverageScope": "auth.service, auth.guard, admin.guard, auth.interceptor, portfolio, ui-preferences.service, portfolio-store.service",
+    "coverageLinesPercent": 92.41,
+    "coverageBranchesPercent": 88.43
   },
   "securityGateTests": 12,
   "loopTests": 7,

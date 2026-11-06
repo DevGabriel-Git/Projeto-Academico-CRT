@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { PortfolioStore } from './portfolio-store.service';
+import { UiPreferences } from './ui-preferences.service';
 
 export interface UserSession {
   id: number;
@@ -14,31 +16,43 @@ export interface UserSession {
 export class AuthService {
   private api = environment.apiUrl + '/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private portfolio: PortfolioStore,
+    private preferences: UiPreferences,
+  ) {}
 
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.api}/login`, credentials).pipe(
-      tap(res => {
+      tap((res) => {
         if (res.token) {
+          this.clearClientState();
           localStorage.setItem('token', res.token);
           localStorage.setItem('user', JSON.stringify(res));
         }
-      })
+      }),
     );
   }
 
   register(data: any): Observable<any> {
     return this.http.post<any>(`${this.api}/register`, data).pipe(
-      tap(res => {
+      tap((res) => {
         if (res.token) {
+          this.clearClientState();
           localStorage.setItem('token', res.token);
           localStorage.setItem('user', JSON.stringify(res));
         }
-      })
+      }),
     );
   }
 
+  clearClientState(): void {
+    this.portfolio.clear();
+    this.preferences.clearSession();
+  }
+
   logout() {
+    this.clearClientState();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   }
@@ -46,15 +60,15 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
-  
+
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
   currentUser(): Observable<UserSession> {
-    return this.http.get<UserSession>(`${this.api}/me`).pipe(
-      tap(user => localStorage.setItem('user', JSON.stringify(user)))
-    );
+    return this.http
+      .get<UserSession>(`${this.api}/me`)
+      .pipe(tap((user) => localStorage.setItem('user', JSON.stringify(user))));
   }
 
   isAdmin(): boolean {

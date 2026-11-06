@@ -1,0 +1,307 @@
+<section class="page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Seu próximo passo começa aqui</p>
+      <h1>Uma visão mais clara do seu dinheiro.</h1>
+      <p>Acompanhe suas posições e organize seus próximos movimentos.</p>
+    </div>
+    <div class="actions">
+      <button
+        class="icon-button"
+        aria-label="Atualizar visão geral"
+        (click)="store.loadWithHistory()"
+        [disabled]="store.loading()"
+      >
+        <crt-icon name="refresh" /></button
+      ><a class="button primary" routerLink="/carteira" [queryParams]="{ operar: 'true' }"
+        ><crt-icon name="plus" />Nova operação</a
+      >
+    </div>
+  </header>
+  <div class="actions" style="justify-content: space-between; margin-bottom: 18px">
+    <div class="segmented" aria-label="Moeda dos indicadores">
+      <button
+        [class.selected]="currency === 'BRL'"
+        (click)="currency = 'BRL'; selectedAllocation = ''"
+      >
+        BRL · Real</button
+      ><button
+        [class.selected]="currency === 'USD'"
+        (click)="currency = 'USD'; selectedAllocation = ''"
+      >
+        USD · Dólar
+      </button>
+    </div>
+    <p class="hint">
+      {{
+        store.updated()
+          ? 'Atualizado às ' + (store.updated() | date: 'HH:mm')
+          : 'Buscando seus dados'
+      }}
+    </p>
+  </div>
+  @if (store.error()) {
+    <div class="notice error" role="alert">
+      {{ store.error() }}
+      <button class="text-button" (click)="store.loadWithHistory()">Tentar novamente</button>
+    </div>
+  }
+  @if (store.loading()) {
+    <div class="skeleton-grid" role="status" aria-label="Carregando indicadores">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  } @else if (!store.error()) {
+    <div class="hero-grid">
+      <article class="panel metric hero">
+        <div class="metric-label"><span>Patrimônio estimado</span><crt-icon name="wallet" /></div>
+        <p class="metric-value mono">{{ totals.current | money: currency }}</p>
+        <span class="pill">{{ totals.count }} posições em {{ currency }}</span>
+        <p class="hint" style="margin-top: 12px">Quantidade × última cotação disponível</p>
+      </article>
+      <article class="panel metric">
+        <div class="metric-label"><span>Custo das posições</span><crt-icon name="chart" /></div>
+        <p class="metric-value mono">{{ totals.cost | money: currency }}</p>
+        <p class="hint">
+          Valor investido nas posições com saldo.<br />Reais e dólares são apresentados
+          separadamente.
+        </p>
+      </article>
+      <article class="panel metric">
+        <div class="metric-label">
+          <span>Resultado não realizado</span><crt-icon name="arrow" />
+        </div>
+        <p
+          class="metric-value mono"
+          [class.positive]="(totals.result || 0) >= 0"
+          [class.negative]="(totals.result || 0) < 0"
+        >
+          {{ totals.result | money: currency }}
+        </p>
+        <span
+          class="pill"
+          [class.positive]="(totals.result || 0) >= 0"
+          [class.negative]="(totals.result || 0) < 0"
+          >{{
+            ui.privateValues()
+              ? '••••'
+              : totals.percent === null
+                ? 'Sem base de comparação'
+                : (totals.percent | number: '1.2-2') + '% sobre o custo'
+          }}</span
+        >
+      </article>
+    </div>
+    @if (totals.missing) {
+      <p class="notice">
+        {{ totals.missing }} posição(ões) sem cotação disponível. Atualize os ativos para calcular
+        patrimônio e resultado.
+      </p>
+    }
+    <div class="dashboard-grid">
+      <article class="panel">
+        <header class="panel-heading">
+          <div>
+            <h2>Seu dinheiro em movimento</h2>
+            <p class="hint">Compras e vendas registradas · {{ currency }}</p>
+          </div>
+          <div class="segmented" aria-label="Período do gráfico">
+            <button [class.selected]="period === 30" (click)="period = 30">30D</button
+            ><button [class.selected]="period === 90" (click)="period = 90">3M</button
+            ><button [class.selected]="period === 180" (click)="period = 180">6M</button>
+          </div>
+        </header>
+        <div class="panel-body">
+          @if (store.historyLoading()) {
+            <div class="skeleton" role="status" aria-label="Carregando movimentações"></div>
+          } @else if (store.historyError()) {
+            <p class="notice error" role="alert">
+              {{ store.historyError() }}
+              <button class="text-button" (click)="store.loadWithHistory()">Recarregar</button>
+            </p>
+          } @else if (hasChartData) {
+            <div class="bars" aria-label="Gráfico de volume mensal de compras e vendas">
+              @for (bar of bars; track $index) {
+                <div class="bar-group">
+                  <div
+                    class="bar"
+                    role="img"
+                    tabindex="0"
+                    [style.height.%]="bar.buyHeight"
+                    [title]="bar.label + ' · compras: ' + (bar.buy | money: currency)"
+                    [attr.aria-label]="bar.label + ' · compras: ' + (bar.buy | money: currency)"
+                  ></div>
+                  <div
+                    class="bar"
+                    role="img"
+                    tabindex="0"
+                    data-sale="true"
+                    [style.height.%]="bar.saleHeight"
+                    [title]="bar.label + ' · vendas: ' + (bar.sale | money: currency)"
+                    [attr.aria-label]="bar.label + ' · vendas: ' + (bar.sale | money: currency)"
+                  ></div>
+                  <span>{{ bar.label }}</span>
+                </div>
+              }
+            </div>
+            <div class="chart-legend">
+              <span><i class="legend-dot"></i>Compras</span
+              ><span><i class="legend-dot" style="background: var(--muted)"></i>Vendas</span
+              ><a class="text-button" style="margin-left: auto" routerLink="/historico"
+                >Ver registros <crt-icon name="arrow"
+              /></a>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <crt-icon name="chart" />
+              <h2>Aqui começa sua trajetória</h2>
+              <p>
+                As operações deste período aparecerão aqui. Faça sua primeira compra para começar.
+              </p>
+              <a routerLink="/carteira" class="text-button"
+                >Ir para minha carteira <crt-icon name="arrow"
+              /></a>
+            </div>
+          }
+          <p class="hint" style="margin-top: 18px">
+            Volumes de operações, não rentabilidade histórica. Sem conversão de moedas.
+          </p>
+        </div>
+      </article>
+      <article class="panel">
+        <header class="panel-heading">
+          <div>
+            <h2>Como você está distribuindo</h2>
+            <p class="hint">Participação pelo custo · {{ currency }}</p>
+          </div>
+        </header>
+        <div class="panel-body">
+          <div class="segmented" style="margin-bottom: 22px" aria-label="Agrupar distribuição">
+            <button
+              [class.selected]="group === 'asset'"
+              (click)="group = 'asset'; selectedAllocation = ''"
+            >
+              Por ativo</button
+            ><button
+              [class.selected]="group === 'broker'"
+              (click)="group = 'broker'; selectedAllocation = ''"
+            >
+              Por corretora
+            </button>
+          </div>
+          @if (groups.length) {
+            <div class="donut-wrap">
+              <div
+                class="donut"
+                [style.background]="donut"
+                role="img"
+                [attr.aria-label]="
+                  'Distribuição de ' +
+                  groups.length +
+                  ' grupos. Consulte os valores na lista ao lado.'
+                "
+              >
+                <div class="donut-center">
+                  {{ groups.length
+                  }}<small>{{ group === 'asset' ? 'ativos' : 'corretoras' }}</small>
+                </div>
+              </div>
+              <div class="allocation-list">
+                @for (item of visibleGroups; track item.name) {
+                  <button
+                    class="allocation-row"
+                    (click)="selectAllocation(item.name)"
+                    [attr.aria-pressed]="selectedAllocation === item.name"
+                  >
+                    <i [style.background]="colors[$index]"></i><span>{{ item.name }}</span
+                    ><strong>{{
+                      ui.privateValues() ? '•••' : (item.percent | number: '1.1-1') + '%'
+                    }}</strong>
+                  </button>
+                }
+              </div>
+            </div>
+            @if (selectedAllocation) {
+              @for (item of visibleGroups; track item.name) {
+                @if (item.name === selectedAllocation) {
+                  <p class="notice" role="status">
+                    <strong>{{ item.name }}</strong> · {{ item.value | money: currency }} investidos
+                  </p>
+                }
+              }
+            }
+          } @else {
+            <div class="empty-state">
+              <crt-icon name="wallet" />
+              <p>Suas posições em {{ currency }} formarão essa distribuição.</p>
+            </div>
+          }
+        </div>
+      </article>
+    </div>
+    <article class="panel">
+      <header class="panel-heading">
+        <div>
+          <h2>Últimos movimentos</h2>
+          <p class="hint">Um resumo das suas operações em {{ currency }}</p>
+        </div>
+        <a routerLink="/historico" class="text-button">Ver histórico <crt-icon name="arrow" /></a>
+      </header>
+      @if (latest.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ativo</th>
+                <th>Operação</th>
+                <th>Data</th>
+                <th class="numeric">Quantidade</th>
+                <th class="numeric">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of latest; track item.id) {
+                <tr>
+                  <td>
+                    <div class="asset-cell">
+                      <span class="ticker-avatar">{{ item.ticker.slice(0, 2) }}</span
+                      ><strong>{{ item.ticker }}</strong>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pill" [class.positive]="item.tipo === 'COMPRA'">{{
+                      item.tipo === 'COMPRA' ? 'Compra' : 'Venda'
+                    }}</span>
+                  </td>
+                  <td class="muted">{{ item.dataOperacao | date: 'dd MMM, HH:mm' }}</td>
+                  <td class="numeric">{{ ui.privateValues() ? '••' : item.quantidade }}</td>
+                  <td class="numeric">{{ item.valorTotal | money: currency }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="hint" style="padding: 0 24px 25px">
+          Nenhuma movimentação disponível nesta moeda.
+        </p>
+      }
+    </article>
+    <div class="quick-links">
+      <a routerLink="/carteira" class="panel quick-link"
+        ><crt-icon name="wallet" />
+        <div>Minha carteira<small>Posições e novas operações</small></div>
+        <crt-icon name="arrow" style="margin-left: auto" /></a
+      ><a routerLink="/acoes" class="panel quick-link"
+        ><crt-icon name="star" />
+        <div>Meus ativos<small>Cotações e favoritos da sessão</small></div>
+        <crt-icon name="arrow" style="margin-left: auto" /></a
+      ><a routerLink="/corretoras" class="panel quick-link"
+        ><crt-icon name="building" />
+        <div>Minhas corretoras<small>Organize suas instituições</small></div>
+        <crt-icon name="arrow" style="margin-left: auto"
+      /></a>
+    </div>
+  }
+</section>

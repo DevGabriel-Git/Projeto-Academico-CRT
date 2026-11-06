@@ -62,6 +62,9 @@ export class LoginComponent {
     if (router.parseUrl(router.url).queryParams['reason'] === 'expired') {
       this.error = 'Sessão expirada. Entre novamente.';
     }
+    if (router.parseUrl(router.url).queryParams['reason'] === 'changed') {
+      this.error = 'A sessão mudou em outra aba. Confirme a conta para continuar.';
+    }
   }
 
   onSubmit() {

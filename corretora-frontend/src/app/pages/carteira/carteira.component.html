@@ -1,0 +1,225 @@
+<section class="page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Cada posição, uma decisão</p>
+      <h1>Minha carteira</h1>
+      <p>Seus ativos organizados. Seus próximos movimentos, mais simples.</p>
+    </div>
+    <div class="actions">
+      <button
+        class="icon-button"
+        aria-label="Recarregar posições"
+        (click)="store.load()"
+        [disabled]="store.loading()"
+      >
+        <crt-icon name="refresh" /></button
+      ><button class="button primary" (click)="operate()">
+        <crt-icon name="plus" />Nova operação
+      </button>
+    </div>
+  </header>
+  <div class="segmented" style="margin-bottom: 20px" aria-label="Moeda da carteira">
+    <button [class.selected]="currency === 'BRL'" (click)="currency = 'BRL'">BRL · Real</button
+    ><button [class.selected]="currency === 'USD'" (click)="currency = 'USD'">USD · Dólar</button>
+  </div>
+  @if (store.loading()) {
+    <div class="skeleton-grid" role="status" aria-label="Carregando resumo da carteira">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  } @else if (!store.error()) {
+    <div class="hero-grid">
+      <article class="panel metric hero">
+        <p class="metric-label">Patrimônio estimado</p>
+        <p class="metric-value">{{ totals.current | money: currency }}</p>
+        <p class="hint">Com base na última cotação salva</p>
+      </article>
+      <article class="panel metric">
+        <p class="metric-label">Custo das posições</p>
+        <p class="metric-value">{{ totals.cost | money: currency }}</p>
+        <p class="hint">{{ totals.count }} posições com saldo em {{ currency }}</p>
+      </article>
+      <article class="panel metric">
+        <p class="metric-label">Resultado não realizado</p>
+        <p
+          class="metric-value"
+          [class.positive]="(totals.result || 0) >= 0"
+          [class.negative]="(totals.result || 0) < 0"
+        >
+          {{ totals.result | money: currency }}
+        </p>
+        <p class="hint">Sem conversão de moedas ou taxas</p>
+      </article>
+    </div>
+  }
+  @if (store.error()) {
+    <p class="notice error" role="alert">
+      {{ store.error() }}
+      <button class="text-button" (click)="store.load()">Tentar novamente</button>
+    </p>
+  }
+  @if (totals.missing) {
+    <p class="notice">
+      Há posições sem cotação. O patrimônio e o resultado ficam indisponíveis até atualizar esses
+      ativos.
+    </p>
+  }
+  <article class="panel">
+    <div class="toolbar">
+      <label class="search-field"
+        ><crt-icon name="search" /><input
+          aria-label="Buscar posições"
+          [(ngModel)]="query"
+          placeholder="Buscar por ticker ou empresa..." /></label
+      ><select aria-label="Filtrar por corretora" class="filter-select" [(ngModel)]="broker">
+        <option value="">Todas as corretoras</option>
+        @for (item of store.brokers(); track item.id) {
+          <option [value]="item.id">{{ item.nomeFantasia || item.razaoSocial }}</option>
+        }</select
+      ><select aria-label="Ordenar posições" class="filter-select" [(ngModel)]="sort">
+        <option value="value">Maior custo</option>
+        <option value="ticker">Ticker A–Z</option>
+      </select>
+    </div>
+    @if (store.loading()) {
+      <div class="panel-body" role="status">
+        <div class="skeleton" style="margin-top: 20px"></div>
+      </div>
+    } @else if (positions.length) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Ativo / corretora</th>
+              <th class="numeric">Quantidade</th>
+              <th class="numeric">Preço médio</th>
+              <th class="numeric">Última cotação</th>
+              <th class="numeric">Valor estimado</th>
+              <th class="numeric">Resultado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (position of positions; track position.id) {
+              <tr>
+                <td>
+                  <button
+                    class="asset-cell"
+                    style="border: 0; background: none; text-align: left; color: var(--text)"
+                    (click)="details = position"
+                    [attr.aria-label]="'Ver detalhes de ' + position.acao?.ticker"
+                  >
+                    <span class="ticker-avatar">{{ position.acao?.ticker?.slice(0, 2) }}</span
+                    ><span
+                      ><strong>{{ position.acao?.ticker }}</strong
+                      ><small>{{ brokerName(position) }}</small></span
+                    >
+                  </button>
+                </td>
+                <td class="numeric">{{ ui.privateValues() ? '••' : position.quantidade }}</td>
+                <td class="numeric">{{ position.precoMedio | money: currency }}</td>
+                <td class="numeric">{{ position.acao?.cotacaoAtual | money: currency }}</td>
+                <td class="numeric">{{ current(position) | money: currency }}</td>
+                <td
+                  class="numeric"
+                  [class.positive]="(result(position) || 0) >= 0"
+                  [class.negative]="(result(position) || 0) < 0"
+                >
+                  {{ result(position) | money: currency }}
+                </td>
+                <td>
+                  <div class="actions">
+                    <button class="text-button" (click)="operate(position)">Comprar</button
+                    ><button
+                      class="text-button"
+                      style="color: var(--bad)"
+                      (click)="operate(position, 'VENDA')"
+                    >
+                      Vender
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <footer class="table-footer">
+        <span>{{ positions.length }} posições exibidas · {{ currency }}</span
+        ><span>Valores estimados, sem corretagem ou impostos</span>
+      </footer>
+    } @else if (!store.error()) {
+      <div class="empty-state">
+        <crt-icon name="wallet" />
+        <h2>
+          {{
+            query || broker
+              ? 'Nenhum resultado para esses filtros'
+              : 'Sua carteira começa com o primeiro passo'
+          }}
+        </h2>
+        <p>
+          {{
+            query || broker
+              ? 'Tente outro termo ou limpe os filtros.'
+              : 'Cadastre uma corretora e um ativo. Depois registre sua primeira compra.'
+          }}
+        </p>
+        <div class="actions">
+          <a routerLink="/corretoras" class="button">Minhas corretoras</a
+          ><button class="button primary" (click)="operate()">Nova operação</button>
+        </div>
+      </div>
+    }
+  </article>
+</section>
+<crt-operation
+  [open]="operationOpen()"
+  [position]="seed"
+  [initialStock]="initialStock"
+  [initialType]="initialType"
+  (dismissed)="operationOpen.set(false)"
+  (completed)="completed()"
+/>
+<crt-dialog
+  [open]="details !== null"
+  title="Detalhes da posição"
+  [drawer]="true"
+  (dismissed)="details = null"
+>
+  @if (details; as item) {
+    <div class="asset-cell" style="margin-bottom: 26px">
+      <span class="ticker-avatar">{{ item.acao?.ticker?.slice(0, 2) }}</span>
+      <div>
+        <h2>{{ item.acao?.ticker }}</h2>
+        <p class="hint">{{ item.acao?.nomeEmpresa }}</p>
+      </div>
+    </div>
+    <dl class="detail-list">
+      <dt>Corretora</dt>
+      <dd>{{ brokerName(item) }}</dd>
+      <dt>Mercado</dt>
+      <dd>{{ item.acao?.mercado }}</dd>
+      <dt>Quantidade</dt>
+      <dd>{{ ui.privateValues() ? '••' : item.quantidade }}</dd>
+      <dt>Preço médio</dt>
+      <dd>{{ item.precoMedio | money: currencyOf(item) }}</dd>
+      <dt>Cotação salva</dt>
+      <dd>{{ item.acao?.cotacaoAtual | money: currencyOf(item) }}</dd>
+      <dt>Atualização da cotação</dt>
+      <dd>{{ item.acao?.dataHoraCotacao | date: 'dd/MM/yy HH:mm' }}</dd>
+      <dt>Resultado não realizado</dt>
+      <dd>{{ result(item) | money: currencyOf(item) }}</dd>
+    </dl>
+    <div class="dialog-footer">
+      <a
+        class="button"
+        routerLink="/historico"
+        [queryParams]="{ ticker: item.acao?.ticker }"
+        (click)="details = null"
+        >Ver operações</a
+      ><button class="button primary" (click)="operate(item)">Comprar</button>
+    </div>
+  }
+</crt-dialog>

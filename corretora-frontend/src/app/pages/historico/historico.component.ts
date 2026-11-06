@@ -1,87 +1,113 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CarteiraService } from '../../services/carteira.service';
-import { Carteira, HistoricoCarteira } from '../../models/models';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { PortfolioStore } from '../../services/portfolio-store.service';
+import { UiPreferences } from '../../services/ui-preferences.service';
+import { Currency, downloadCsv } from '../../shared/portfolio';
+import { MoneyPipe } from '../../shared/money.pipe';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-historico',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="flex flex-col h-full overflow-hidden">
-      <div class="px-6 py-4 border-b border-orange-500 dark:border-[#1e2330] bg-white dark:bg-[#0a0b0e]">
-        <h1 class="text-black dark:text-white font-semibold text-base">Histórico</h1>
-        <p class="text-slate-600 text-xs mt-0.5">Todas as operações realizadas</p>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-6">
-        <div *ngIf="loading" class="text-slate-600 text-xs text-center py-8">Carregando...</div>
-
-        <div *ngFor="let c of carteiras" class="mb-4">
-          <div class="bg-slate-50 dark:bg-[#0d0f14] border border-orange-500 dark:border-[#1e2330] rounded-xl overflow-hidden">
-            <div class="px-4 py-3 border-b border-orange-500 dark:border-[#1e2330] flex items-center gap-2">
-              <span class="font-mono font-bold text-black dark:text-white text-sm">{{ c.acao?.ticker }}</span>
-              <span class="text-slate-600 text-xs">{{ c.acao?.nomeEmpresa }}</span>
-              <span class="ml-auto text-[11px] text-slate-500">{{ c.quantidade }} cotas · PM R$ {{ c.precoMedio | number:'1.2-2' }}</span>
-            </div>
-            <table class="w-full text-sm">
-              <tbody>
-                <tr *ngFor="let h of historicos[c.id]" class="border-b border-orange-200 dark:border-[#1a1f2e] last:border-0 hover:bg-orange-50 dark:hover:bg-[#0f1117]">
-                  <td class="px-4 py-2.5">
-                    <span [class]="h.tipo === 'COMPRA'
-                      ? 'text-[10px] px-2 py-0.5 rounded-full bg-[#0a2e1e] text-[#00d4aa] font-bold'
-                      : 'text-[10px] px-2 py-0.5 rounded-full bg-[#2e0a0a] text-red-400 font-bold'">
-                      {{ h.tipo }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-2.5 text-slate-400 text-xs">{{ h.quantidade }} cotas</td>
-                  <td class="px-4 py-2.5 text-slate-400 text-xs font-mono">R$ {{ h.precoUnitario | number:'1.2-2' }}</td>
-                  <td class="px-4 py-2.5 text-slate-800 dark:text-slate-200 text-xs font-mono font-semibold">R$ {{ h.valorTotal | number:'1.2-2' }}</td>
-                  <td class="px-4 py-2.5 text-slate-600 text-xs">{{ h.dataOperacao | date:'dd/MM/yy HH:mm' }}</td>
-                </tr>
-                <tr *ngIf="!historicos[c.id] || historicos[c.id].length === 0">
-                  <td colspan="5" class="px-4 py-3 text-slate-700 text-xs">Sem operações registradas.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div *ngIf="!loading && carteiras.length === 0" class="text-center py-12">
-          <i class="ti ti-history text-slate-700 text-4xl block mb-3"></i>
-          <p class="text-slate-600 text-sm">Nenhuma operação encontrada.</p>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [CommonModule, FormsModule, MoneyPipe, IconComponent],
+  templateUrl: './historico.component.html',
 })
 export class HistoricoComponent implements OnInit {
-  carteiras: Carteira[] = [];
-  historicos: { [key: number]: HistoricoCarteira[] } = {};
-  loading = true;
-
- constructor(
-  private carteiraService: CarteiraService,
-  private cdr: ChangeDetectorRef
-) {}
-
-  ngOnInit() {
-    this.carteiraService.listar().subscribe({
-      next: (carteiras: any) => {
-        this.carteiras = carteiras;
-        this.loading = false;
-        this.cdr.detectChanges();
-        carteiras.forEach((c: any) => {
-          this.carteiraService.listarHistorico(c.id).subscribe({
-            next: (h: any) => { 
-              this.historicos[c.id] = h; 
-              this.cdr.detectChanges();
-            },
-            error: () => {}
-          });
-        });
-      },
-      error: () => { this.loading = false; this.cdr.detectChanges(); }
-    });
+  query = '';
+  type = '';
+  currency: Currency = 'BRL';
+  period = 'all';
+  from = '';
+  to = '';
+  page = 0;
+  readonly pageSize = 15;
+  constructor(
+    public store: PortfolioStore,
+    public ui: UiPreferences,
+    route: ActivatedRoute,
+  ) {
+    this.query = route.snapshot.queryParamMap.get('ticker') || '';
+  }
+  ngOnInit(): void {
+    this.store.loadWithHistory();
+  }
+  get invalidRange(): boolean {
+    return !!this.from && !!this.to && this.from > this.to;
+  }
+  get filtered() {
+    if (this.invalidRange) return [];
+    const query = this.query.trim().toLowerCase();
+    const start = new Date();
+    start.setDate(start.getDate() - Number(this.period));
+    start.setHours(0, 0, 0, 0);
+    return this.store
+      .movements()
+      .filter(
+        (item) =>
+          item.currency === this.currency &&
+          (!this.type || item.tipo === this.type) &&
+          `${item.ticker} ${item.broker}`.toLowerCase().includes(query) &&
+          (this.period === 'all' || new Date(item.dataOperacao) >= start) &&
+          (!this.from || item.dataOperacao.slice(0, 10) >= this.from) &&
+          (!this.to || item.dataOperacao.slice(0, 10) <= this.to),
+      );
+  }
+  get pages(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+  }
+  get currentPage(): number {
+    return Math.min(this.page, this.pages - 1);
+  }
+  get visible() {
+    return this.filtered.slice(
+      this.currentPage * this.pageSize,
+      (this.currentPage + 1) * this.pageSize,
+    );
+  }
+  get buys(): number {
+    return this.filtered
+      .filter((item) => item.tipo === 'COMPRA')
+      .reduce((sum, item) => sum + item.valorTotal, 0);
+  }
+  get sales(): number {
+    return this.filtered
+      .filter((item) => item.tipo === 'VENDA')
+      .reduce((sum, item) => sum + item.valorTotal, 0);
+  }
+  reset(): void {
+    this.query = '';
+    this.type = '';
+    this.period = 'all';
+    this.from = '';
+    this.to = '';
+    this.page = 0;
+  }
+  export(): void {
+    if (
+      this.store.loading() ||
+      this.store.historyLoading() ||
+      this.store.historyError() ||
+      !this.filtered.length
+    )
+      return;
+    downloadCsv(
+      [
+        ['Data', 'Ativo', 'Corretora', 'Tipo', 'Quantidade', 'Moeda', 'Preco unitario', 'Total'],
+        ...this.filtered.map((item) => [
+          item.dataOperacao,
+          item.ticker,
+          item.broker,
+          item.tipo,
+          item.quantidade,
+          item.currency,
+          item.precoUnitario.toFixed(2),
+          item.valorTotal.toFixed(2),
+        ]),
+      ],
+      `crt-operacoes-${this.currency}.csv`,
+    );
+    this.ui.notify('Histórico filtrado exportado em CSV.');
   }
 }

@@ -1,0 +1,221 @@
+<section class="page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">De olho nas suas escolhas</p>
+      <h1>Meus ativos</h1>
+      <p>Cotações salvas, favoritos e atalhos para sua próxima operação.</p>
+    </div>
+    <button class="button primary" (click)="openCreate()">
+      <crt-icon name="plus" />Adicionar ativo
+    </button>
+  </header>
+  @if (store.error()) {
+    <p class="notice error" role="alert">
+      {{ store.error() }}
+      <button class="text-button" (click)="store.load()">Tentar novamente</button>
+    </p>
+  }
+  <div class="segmented" style="margin-bottom: 20px" aria-label="Visão dos ativos">
+    <button [class.selected]="!catalogOpen" (click)="catalogOpen = false">Meus ativos</button
+    ><button [class.selected]="catalogOpen" (click)="explore()">Explorar catálogo</button>
+  </div>
+  @if (catalogOpen) {
+    <article class="panel">
+      <div class="toolbar">
+        <label class="search-field"
+          ><crt-icon name="search" /><input
+            [(ngModel)]="query"
+            placeholder="Buscar ticker no catálogo..."
+            aria-label="Buscar no catálogo" /></label
+        ><select class="filter-select" [(ngModel)]="market" aria-label="Mercado do catálogo">
+          <option value="">Todos os mercados</option>
+          <option value="BR">Brasil</option>
+          <option value="EUA">Estados Unidos</option>
+        </select>
+      </div>
+      <div class="panel-body" style="padding-top: 20px">
+        @if (catalogLoading()) {
+          <div class="skeleton" role="status" aria-label="Consultando catálogo"></div>
+        } @else if (catalogError()) {
+          <p class="notice error" role="alert">
+            {{ catalogError() }}
+            <button class="text-button" (click)="explore()">Tentar novamente</button>
+          </p>
+        } @else {
+          <p class="hint" style="margin-bottom: 20px">
+            Catálogo de referência da API. O cadastro consulta a disponibilidade de cotação no
+            provedor.
+          </p>
+          <div class="list-grid">
+            @for (item of catalogItems; track item.ticker) {
+              <button class="button" (click)="chooseTicker(item)">
+                {{ item.ticker }} <span class="pill">{{ item.mercado }}</span
+                ><crt-icon name="plus" />
+              </button>
+            }
+          </div>
+          @if (!catalogItems.length) {
+            <p class="hint">Nenhum ticker para esses filtros.</p>
+          }
+        }
+      </div>
+    </article>
+  } @else {
+    <article class="panel">
+      <div class="toolbar">
+        <label class="search-field"
+          ><crt-icon name="search" /><input
+            [(ngModel)]="query"
+            aria-label="Buscar ativos"
+            placeholder="Busque por ticker ou empresa..." /></label
+        ><button
+          class="button"
+          [class.primary]="onlyFavorites"
+          [attr.aria-pressed]="onlyFavorites"
+          (click)="onlyFavorites = !onlyFavorites"
+        >
+          <crt-icon name="star" />Favoritos</button
+        ><select class="filter-select" aria-label="Mercado dos ativos" [(ngModel)]="market">
+          <option value="">Todos os mercados</option>
+          <option value="BR">Brasil · BRL</option>
+          <option value="EUA">Estados Unidos · USD</option></select
+        ><select class="filter-select" aria-label="Ordenação de ativos" [(ngModel)]="sort">
+          <option value="ticker">Ticker A–Z</option>
+          <option value="price">Maior cotação nominal</option>
+        </select>
+      </div>
+      @if (store.loading()) {
+        <div class="panel-body" role="status">
+          <div class="skeleton" style="margin-top: 20px"></div>
+        </div>
+      } @else if (stocks.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Favorito</th>
+                <th>Ativo</th>
+                <th>Mercado</th>
+                <th class="numeric">Última cotação</th>
+                <th>Atualizada em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (stock of stocks; track stock.id) {
+                <tr>
+                  <td>
+                    <button
+                      class="icon-button"
+                      [class.active]="ui.favorites().includes(stock.id)"
+                      [attr.aria-pressed]="ui.favorites().includes(stock.id)"
+                      [attr.aria-label]="'Favoritar ' + stock.ticker"
+                      (click)="ui.toggleFavorite(stock.id)"
+                    >
+                      <crt-icon name="star" />
+                    </button>
+                  </td>
+                  <td>
+                    <div class="asset-cell">
+                      <span class="ticker-avatar">{{ stock.ticker.slice(0, 2) }}</span>
+                      <div>
+                        <strong>{{ stock.ticker }}</strong
+                        ><small>{{ stock.nomeEmpresa }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pill"
+                      >{{ stock.mercado === 'BR' ? 'Brasil' : 'EUA' }} · {{ stock.moeda }}</span
+                    >
+                  </td>
+                  <td class="numeric">
+                    <strong>{{ stock.cotacaoAtual | money: stock.moeda }}</strong>
+                  </td>
+                  <td class="quote-age">
+                    {{
+                      stock.dataHoraCotacao
+                        ? (stock.dataHoraCotacao | date: 'dd/MM/yy HH:mm')
+                        : 'Sem atualização'
+                    }}
+                  </td>
+                  <td>
+                    <div class="actions">
+                      <button
+                        class="icon-button"
+                        [disabled]="refreshing().includes(stock.id)"
+                        [attr.aria-label]="'Atualizar cotação de ' + stock.ticker"
+                        (click)="refresh(stock)"
+                      >
+                        <crt-icon name="refresh" /></button
+                      ><a class="button" routerLink="/carteira" [queryParams]="{ acaoId: stock.id }"
+                        >Operar <crt-icon name="arrow"
+                      /></a>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <footer class="table-footer">
+          <span>{{ stocks.length }} ativos exibidos</span
+          ><span>Favoritos são mantidos nesta sessão. Cotações não são em tempo real.</span>
+        </footer>
+      } @else if (!store.error()) {
+        <div class="empty-state">
+          <crt-icon name="star" />
+          <h2>{{ onlyFavorites ? 'Uma lista com a sua cara' : 'Encontre seu próximo ativo' }}</h2>
+          <p>
+            {{
+              onlyFavorites
+                ? 'Marque a estrela nos ativos para reunir seus favoritos aqui.'
+                : 'Adicione um ativo ou ajuste os filtros para começar a acompanhar.'
+            }}
+          </p>
+          <button class="button primary" (click)="openCreate()">Adicionar ativo</button>
+        </div>
+      }
+    </article>
+    <p class="hint" style="margin-top: 18px">
+      A ordenação por cotação considera o preço nominal na moeda de cada ativo. Não representa
+      comparação de valor entre moedas.
+    </p>
+  }
+</section>
+<crt-dialog [open]="modal" title="Adicionar ativo" [busy]="saving()" (dismissed)="modal = false"
+  ><div class="stack">
+    <label class="field"
+      >Ticker<input
+        [(ngModel)]="ticker"
+        placeholder="Ex.: PETR4 ou AAPL"
+        maxlength="20"
+        autocomplete="off" /></label
+    ><label class="field"
+      >Mercado<select [(ngModel)]="selectedMarket">
+        <option value="BR">Brasil · B3</option>
+        <option value="EUA">Estados Unidos</option>
+      </select></label
+    ><label class="field"
+      >Corretora<select [(ngModel)]="brokerCnpj">
+        <option value="">Selecione uma corretora</option>
+        @for (broker of store.brokers(); track broker.id) {
+          <option [value]="broker.cnpj">{{ broker.nomeFantasia || broker.razaoSocial }}</option>
+        }
+      </select></label
+    >
+    <p class="hint">
+      O cadastro consulta a cotação no provedor configurado. É preciso cadastrar uma corretora
+      primeiro.
+    </p>
+    @if (error()) {
+      <p class="notice error" role="alert">{{ error() }}</p>
+    }
+  </div>
+  <footer class="dialog-footer">
+    <button class="button" [disabled]="saving()" (click)="modal = false">Cancelar</button
+    ><button class="button primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Consultando...' : 'Adicionar ativo' }}
+    </button>
+  </footer></crt-dialog
+>

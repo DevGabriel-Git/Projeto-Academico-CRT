@@ -72,7 +72,10 @@
               "src/app/services/auth.service.ts",
               "src/app/guards/auth.guard.ts",
               "src/app/guards/admin.guard.ts",
-              "src/app/interceptors/auth.interceptor.ts"
+              "src/app/interceptors/auth.interceptor.ts",
+              "src/app/shared/portfolio.ts",
+              "src/app/services/ui-preferences.service.ts",
+              "src/app/services/portfolio-store.service.ts"
             ],
             "coverageThresholds": {
               "lines": 80,
