@@ -23,6 +23,7 @@ public class GlobalExceptionHandler {
         IllegalArgumentException.class,
         MethodArgumentNotValidException.class,
         ConstraintViolationException.class,
+        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
         org.springframework.http.converter.HttpMessageNotReadableException.class
     })
     public ResponseEntity<org.springframework.http.ProblemDetail> invalid() {

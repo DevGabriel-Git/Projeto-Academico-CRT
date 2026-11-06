@@ -6,3 +6,5 @@
 - Configurar branch protection/CODEOWNERS no GitHub e revisar o diff antes de push/PR.
 - Conciliar e migrar PostgreSQL legado apenas depois de backup e revisao do schema.
 - Ratificar a constituicao e realizar os exercicios conceituais da disciplina. Instalacao de ferramentas nao comprova aprendizado nem TDD retroativo.
+
+- Escolher a identidade real do primeiro administrador e executar tools/start_with_admin.ps1 com o ambiente local configurado. Nenhuma conta/senha real foi criada nos testes. Recuperacao por e-mail foi removida por escolha do titular; a tela informa indisponibilidade.

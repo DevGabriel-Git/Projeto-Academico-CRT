@@ -23,6 +23,10 @@ import { AuthService } from './services/auth.service';
         </div>
 
         <nav class="p-2 flex-1">
+          <a *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active-nav"
+             class="nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-orange-600 mb-1">
+            <i class="ti ti-users text-base"></i> Administração
+          </a>
           <p class="text-[10px] text-slate-600 tracking-widest uppercase px-2 py-2 mt-2">Principal</p>
           <a routerLink="/dashboard" routerLinkActive="active-nav"
              class="nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-orange-100 dark:hover:bg-[#1a1f2e] hover:text-slate-800 dark:text-slate-200 dark:hover:text-white mb-1 transition-all">
@@ -85,6 +89,10 @@ export class App {
 
   get isLoggedIn() {
     return this.authService.isLoggedIn();
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
   }
 
   get userName(): string {

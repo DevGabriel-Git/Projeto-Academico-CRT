@@ -71,6 +71,7 @@
             "coverageInclude": [
               "src/app/services/auth.service.ts",
               "src/app/guards/auth.guard.ts",
+              "src/app/guards/admin.guard.ts",
               "src/app/interceptors/auth.interceptor.ts"
             ],
             "coverageThresholds": {

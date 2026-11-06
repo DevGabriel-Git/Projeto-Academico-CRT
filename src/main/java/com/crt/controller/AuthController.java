@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService service;
 
+    @GetMapping("/me")
+    public com.crt.dto.UsuarioResponse sessao() {
+        return service.sessao();
+    }
+
     @PostMapping("/register")
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return service.register(request);

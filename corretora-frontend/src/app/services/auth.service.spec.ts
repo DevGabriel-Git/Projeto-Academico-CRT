@@ -13,6 +13,16 @@ describe('AuthService', () => {
     service = TestBed.inject(AuthService); http = TestBed.inject(HttpTestingController);
   });
   afterEach(() => http.verify());
+  it('consulta perfil atual no servidor e atualiza o menu', () => {
+    expect(service.isAdmin()).toBe(false);
+    service.currentUser().subscribe(user => expect(user.perfil).toBe('ADMIN'));
+    http.expectOne(environment.apiUrl + '/auth/me').flush({ id: 1, nome: 'Operador', email: 'op@example.invalid', perfil: 'ADMIN' });
+    expect(service.isAdmin()).toBe(true);
+    localStorage.setItem('user', JSON.stringify({ perfil: 'USER' }));
+    expect(service.isAdmin()).toBe(false);
+    localStorage.setItem('user', '{invalid');
+    expect(service.isAdmin()).toBe(false);
+  });
   it('armazena sessao somente quando o login retorna token', () => {
     service.login({ login: 'aluno', senha: 'teste' }).subscribe();
     http.expectOne(environment.apiUrl + '/auth/login').flush({ token: 'test-token', nome: 'Aluno' });

@@ -5,15 +5,28 @@ import { AuthService } from './services/auth.service';
 
 describe('App', () => {
   let authenticated = false;
+  let administrator = false;
   beforeEach(async () => {
     localStorage.clear();
     authenticated = false;
+    administrator = false;
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter([{ path: 'login', component: App }]), { provide: AuthService, useValue: {
-        isLoggedIn: () => authenticated, logout: () => { authenticated = false; }
+        isLoggedIn: () => authenticated, isAdmin: () => administrator, logout: () => { authenticated = false; }
       }}],
     }).compileComponents();
+  });
+  it('mostra menu administrativo somente para administrador', () => {
+    authenticated = true;
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a[href="/admin"]')).toBeNull();
+    fixture.destroy();
+    administrator = true;
+    const adminFixture = TestBed.createComponent(App);
+    adminFixture.detectChanges();
+    expect(adminFixture.nativeElement.querySelector('a[href="/admin"]')).not.toBeNull();
   });
   it('oculta a navegaÃ§Ã£o enquanto nÃ£o autenticado', () => {
     const fixture = TestBed.createComponent(App); fixture.detectChanges();

@@ -156,6 +156,20 @@ class CarteiraApiIT {
     }
 
     @Test
+    void administradorNaoAcessaPatrimonioDeOutroTitular() throws Exception {
+        var admin = usuarios.findByEmail("outro@example.com").orElseThrow();
+        admin.setPerfil(Perfil.ADMIN);
+        usuarios.saveAndFlush(admin);
+        request("/carteira/operar", "POST", operacao("COMPRA", 1), token);
+        var id = carteiras.findAll().getFirst().getId();
+        assertThat(request("/carteira/" + id, "GET", null, outroToken).statusCode()).isEqualTo(404);
+        assertThat(
+                        request("/carteira/operar", "POST", operacao("COMPRA", 1), outroToken)
+                                .statusCode())
+                .isEqualTo(404);
+    }
+
+    @Test
     void exigeTokenERejeitaTokenMalformado() throws Exception {
         assertThat(request("/carteira", "GET", null, null).statusCode()).isEqualTo(401);
         assertThat(request("/carteira", "GET", null, "invalido").statusCode()).isEqualTo(401);
@@ -168,7 +182,22 @@ class CarteiraApiIT {
         assertThat(request("/actuator/prometheus", "GET", null, null).statusCode()).isEqualTo(401);
         assertThat(request("/actuator/prometheus", "GET", null, "invalido").statusCode())
                 .isEqualTo(401);
-        var metricas = request("/actuator/prometheus", "GET", null, token);
+        assertThat(request("/actuator/prometheus", "GET", null, token).statusCode()).isEqualTo(403);
+        var administrador =
+                usuarios.save(
+                        Usuario.builder()
+                                .nome("Administrador")
+                                .email("operacao@example.invalid")
+                                .cpf("10000000003")
+                                .senha("hash-nao-utilizado")
+                                .perfil(com.crt.entity.Perfil.ADMIN)
+                                .build());
+        var metricas =
+                request(
+                        "/actuator/prometheus",
+                        "GET",
+                        null,
+                        jwt.generateToken(administrador.getEmail()));
         assertThat(metricas.statusCode()).isEqualTo(200);
         assertThat(metricas.body()).contains("jvm_").doesNotContain(token, "teste@example.com");
         assertThat(request("/actuator/info", "GET", null, token).statusCode()).isEqualTo(404);

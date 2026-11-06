@@ -30,7 +30,7 @@ npm run build
 
 Linux/macOS: use `bash mvnw clean verify`. Testes usam H2 isolado, migrações Flyway e nenhum provedor externo.
 `verify` inclui Spotless, Checkstyle, PMD, unitários, ArchUnit, integração MockMvc com segurança/banco e JaCoCo mínimo 80% de linhas e ramos.
-DTOs, entidades com acesso gerado pelo Lombok e bootstrap ficam fora do cálculo; mapeamento/persistência são exercitados na integração.
+DTOs, entidades com acesso gerado pelo Lombok e a classe principal ficam fora do cálculo; mapeamento/persistência são exercitados na integração.
 O relatório de cobertura é gerado em `target/site/jacoco/index.html`.
 
 ## Executar localmente
@@ -73,3 +73,9 @@ Cotação de laboratório não é recomendação de investimento.
 O hook em .githooks/pre-commit executa verify e rastreabilidade. Ative neste clone com `git config core.hooksPath .githooks`.
 Teste de mutacao: `mvnw.cmd -Pmutation test-compile org.pitest:pitest-maven:mutationCoverage`.
 Observabilidade/carga local: `python scripts/smoke_observability.py`; exige k6 e dependencias tools/requirements.txt. Usa banco efemero, credenciais aleatorias, loopback e encerra os processos criados.
+
+## Perfis de acesso
+
+Login unico para USER e ADMIN por e-mail ou CPF. Cadastro publico cria USER; ADMIN recebe a tela /admin com consulta paginada de usuarios e acesso exclusivo as metricas. Carteiras permanecem privadas por titular, inclusive para administradores.
+
+Primeiro administrador: `tools/start_with_admin.ps1` pede os dados localmente, com senha oculta, e inicia o bootstrap explicito. Nao ha senha padrao nem conta criada em seu banco durante os testes. Veja [docs/perfis-acesso.md](docs/perfis-acesso.md). Smoke real isolado: `python scripts/smoke_roles.py`, depois de gerar o JAR.

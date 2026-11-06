@@ -1,18 +1,18 @@
 {
   "coverage": {
     "BRANCH": {
-      "covered": 82,
+      "covered": 110,
       "missed": 8,
-      "percent": 91.11
+      "percent": 93.22
     },
     "LINE": {
-      "covered": 380,
+      "covered": 435,
       "missed": 19,
-      "percent": 95.24
+      "percent": 95.81
     }
   },
-  "surefire-reports": 43,
-  "failsafe-reports": 12,
+  "surefire-reports": 45,
+  "failsafe-reports": 29,
   "date": "2026-11-06",
   "project": "Projeto-Academico-CRT",
   "reference": "a54c35fd28508355aa992ae3bc30f0fa07da9140",
@@ -22,15 +22,17 @@
     "scope": "CarteiraService"
   },
   "frontend": {
-    "tests": 11,
+    "tests": 29,
     "coverageAuthBoundaryPercent": 100,
-    "globalCoverageClaimed": false
+    "globalCoverageClaimed": false,
+    "initialBundleKB": 413.49,
+    "coverageScope": "auth.service, auth.guard, admin.guard, auth.interceptor"
   },
   "securityGateTests": 12,
   "loopTests": 7,
   "ruleCases": 10,
   "externalSkills": 18,
-  "openspecScenarios": 12,
+  "openspecScenarios": 31,
   "codeql": {
     "version": "2.27.4",
     "languages": [
@@ -72,15 +74,29 @@
   },
   "complementaryGate": {
     "status": "passed",
-    "semgrepFindings": 0,
     "semgrepScopedTriage": "docs/security-actuator.md",
     "gitleaksNewFindings": 0,
-    "spotbugsFindings": 0
+    "spotbugsFindings": 0,
+    "semgrepActiveFindings": 0,
+    "semgrepSuppressedFindings": 1
   },
   "dast": {
     "status": "partial baseline passed",
     "scope": "unauthenticated health only",
     "alerts": 0,
     "limitation": "root spider returned 401; authenticated flows not scanned"
+  },
+  "traceabilityGateTests": 4,
+  "roles": {
+    "status": "implemented and verified",
+    "profiles": [
+      "USER",
+      "ADMIN"
+    ],
+    "bootstrap": "explicit profile, no default password",
+    "realHttpSmoke": "passed with ephemeral H2",
+    "passwordRecovery": "unavailable by explicit owner choice; simulation removed",
+    "diffCoverage": "86/86 lines since 6cd0ef5",
+    "mavenLauncherSmoke": "passed on Windows with ephemeral H2"
   }
 }

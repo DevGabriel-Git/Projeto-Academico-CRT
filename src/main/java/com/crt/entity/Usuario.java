@@ -2,7 +2,7 @@ package com.crt.entity;
 
 import jakarta.persistence.*;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,9 +32,16 @@ public class Usuario implements UserDetails {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private String senha;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    @Builder.Default
+    private Perfil perfil = Perfil.USER;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return List.of(
+                new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_" + perfil.name()));
     }
 
     @Override

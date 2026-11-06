@@ -28,7 +28,7 @@ import { AuthService } from '../../services/auth.service';
           <div>
             <div class="flex items-center justify-between mb-2">
               <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Senha</label>
-              <a href="#" class="text-xs text-orange-500 hover:text-orange-600 font-medium">Esqueceu a senha?</a>
+              <a routerLink="/forgot-password" class="text-xs text-orange-500 hover:text-orange-600 font-medium">Esqueceu a senha?</a>
             </div>
             <input type="password" [(ngModel)]="credentials.senha" name="senha" required
                    class="w-full bg-slate-50 dark:bg-[#0a0b0e] border border-orange-200 dark:border-[#1e2330] rounded-lg px-4 py-3 text-slate-800 dark:text-white text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
@@ -58,7 +58,11 @@ export class LoginComponent {
   loading = false;
   error = '';
 
-  constructor(private authService: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(private authService: AuthService, private router: Router, private cdr: ChangeDetectorRef) {
+    if (router.parseUrl(router.url).queryParams['reason'] === 'expired') {
+      this.error = 'Sessão expirada. Entre novamente.';
+    }
+  }
 
   onSubmit() {
     if (!this.credentials.login || !this.credentials.senha) {
@@ -71,7 +75,7 @@ export class LoginComponent {
       next: () => {
         this.loading = false;
         this.cdr.detectChanges();
-        this.router.navigate(['/dashboard']);
+        this.router.navigate([this.authService.isAdmin() ? '/admin' : '/dashboard']);
       },
       error: (e) => {
         this.error = 'Login ou senha incorretos';

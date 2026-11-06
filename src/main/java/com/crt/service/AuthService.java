@@ -18,6 +18,11 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final com.crt.security.UsuarioAtual usuarioAtual;
+
+    public com.crt.dto.UsuarioResponse sessao() {
+        return com.crt.dto.UsuarioResponse.from(usuarioAtual.obter());
+    }
 
     public AuthResponse register(RegisterRequest request) {
         if (repository.findByEmail(request.getEmail()).isPresent()) {
@@ -32,14 +37,10 @@ public class AuthService {
                         .email(request.getEmail())
                         .cpf(request.getCpf())
                         .senha(passwordEncoder.encode(request.getSenha()))
+                        .perfil(com.crt.entity.Perfil.USER)
                         .build();
         repository.save(user);
-        String jwtToken = jwtService.generateToken(user.getEmail());
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .nome(user.getNome())
-                .email(user.getEmail())
-                .build();
+        return resposta(user);
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -49,11 +50,15 @@ public class AuthService {
                 repository
                         .findByEmail(request.getLogin())
                         .orElseGet(() -> repository.findByCpf(request.getLogin()).orElseThrow());
-        String jwtToken = jwtService.generateToken(user.getEmail());
+        return resposta(user);
+    }
+
+    private AuthResponse resposta(Usuario user) {
         return AuthResponse.builder()
-                .token(jwtToken)
+                .token(jwtService.generateToken(user.getEmail()))
                 .nome(user.getNome())
                 .email(user.getEmail())
+                .perfil(user.getPerfil().name())
                 .build();
     }
 }
