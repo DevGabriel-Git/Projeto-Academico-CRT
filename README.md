@@ -6,6 +6,8 @@ Autores: Gabriel Pereira, Rian Araújo e Paulo Candido.
 API de corretoras, ações, carteira e histórico privado por usuário; frontend Angular.
 A adequação ao curso está detalhada em [docs/adequacao-curso.md](docs/adequacao-curso.md), com evidências e pendências por módulo.
 
+Para localizar o código, a documentação e as ferramentas, consulte o [guia das pastas](docs/estrutura.md).
+
 ## Ambiente
 
 Java 21, Maven Wrapper 3.9.14, Node 24 LTS e npm. Backend Spring Boot 4; Angular 21.
