@@ -54,7 +54,11 @@
     "reason": "NVD_API_KEY absent"
   },
   "externalAgent": {
-    "status": "not activated",
-    "reason": "automatic approval rejected unapproved code export destination"
+    "status": "implemented, not remotely activated",
+    "provider": "OpenAI Responses API",
+    "destinationAuthorized": "2026-11-06",
+    "localTests": 10,
+    "liveApiExecuted": false,
+    "reason": "OPENAI_API_KEY absent; remote publication requires complete preflight"
   }
 }

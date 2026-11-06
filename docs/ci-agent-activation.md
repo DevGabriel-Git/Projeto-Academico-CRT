@@ -1,9 +1,11 @@
-# Ativacao externa do agente CI — pendente
+# Revisao consultiva OpenAI no CI
 
-A revisao automatica rejeitou a criacao de um workflow persistente que enviaria o diff e entrada de usuario a um agente externo usando chaves de modelo: nao havia autorizacao especifica para o destino e a exportacao de conteudo privado.
+O titular autorizou explicitamente em 2026-11-06 o envio do diff do seu projeto a API da OpenAI. Essa autorizacao resolve a pendencia de destino que havia causado a rejeicao automatica anterior.
 
-Alternativa implementada: workflow manual prepara um pacote para revisao humana no proprio GitHub, verifica segredos e armazena artefato sem chamar modelo nem ler chave de provedor. Nao envia comentarios nem faz merge.
+O workflow `Manual OpenAI advisory review` tem disparo manual e faz checkout somente da branch padrao, sem persistir credenciais Git. Envia apenas o diff textual do ultimo commit para `https://api.openai.com/v1/responses`, depois de Gitleaks. Nao revisa uma PR inteira. Diff vazio ou maior que 24000 bytes bloqueia a chamada, sem truncamento. Usa `gpt-6-luna`, uma requisicao sem retry, timeout 120s, no maximo 2000 tokens de saida, nenhuma ferramenta e `store=false`. Esses limites limitam consumo por execucao, mas nao sao um teto monetario da conta; configure limites de gastos no projeto OpenAI.
 
-Proposta para uma ativacao futura: somente disparo manual; provedor/destino aprovado pelo titular; diff e pedido verificados antes de envio; ferramentas de leitura; sem token GitHub no agente; teto de 10 minutos e orcamento aprovado; resposta como artefato para revisao humana. Nenhum valor de chave deve ser enviado no chat.
+Para ativar apos publicacao revisada: adicionar `OPENAI_API_KEY` em Settings > Secrets and variables > Actions do seu repositorio, com acesso ao modelo e faturamento API. Nao colocar chave em arquivo, issue ou chat. Executar manualmente na aba Actions. Sem chave, com recusa, resposta incompleta ou erro, a etapa falha. Nao ha aprovacao, comentario, alteracao de codigo ou merge automatico. Relatorio consultivo somente no artefato, retido por sete dias e tratado como conteudo nao confiavel.
 
-A escolha do provedor, autorizacao de envio do codigo e configuracao da chave ficam pendentes. Scripts de executor estao versionados para revisao, sem invocacao automatica.
+`store=false` nao significa retencao zero: logs de monitoramento de abuso podem reter conteudo por ate 30 dias, conforme os controles da conta. Consulte a [documentacao de dados](https://developers.openai.com/api/docs/guides/your-data). Implementacao baseada na [Responses API](https://developers.openai.com/api/docs/guides/text) e no [modelo GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna).
+
+Validacao local usa respostas simuladas, sem exportar codigo ou consumir API. Execucao real no GitHub e configuracao do secret continuam pendentes.
