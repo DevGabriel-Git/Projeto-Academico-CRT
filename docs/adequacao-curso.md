@@ -12,7 +12,7 @@ A aplicacao financeira e o frontend foram preservados; nao foi copiado o catalog
 | 0 — Fundamentos IA | docs/fundamentos-ia.md, limites de LLM, contexto, verificacao e privacidade | Exercicios conceituais do aluno nao podem ser atestados pela edicao de arquivos. |
 | 1 — Ambiente | Java 21, Node 24, OMP 18.3.2/Bun 1.3.14 locais; AGENTS, regras, skills e versoes fixadas | OMP resolve skill://tdd. Login de provedor nao foi feito nem credenciais globais alteradas. |
 | 2 — Clean Code | Spotless/AOSP, Checkstyle, PMD, ESLint + tsc; construtores; auth separado; records publicos e ProblemDetail | Build e lint aprovados; modelo financeiro e formato consumido pelo Angular preservados. |
-| 3 — TDD/cobertura | 80% linhas/ramos backend; diff coverage; cobertura por arquivo nas fronteiras auth Angular; PIT no dominio critico; hook pre-commit | 54 testes backend; 11 Angular; 39/39 mutantes eliminados. RED real registrado para regressao SARIF, precisao, RFC 9457 e CSRF; nao alegamos TDD retroativo do legado. |
+| 3 — TDD/cobertura | 80% linhas/ramos backend; diff coverage; cobertura por arquivo nas fronteiras auth Angular; PIT no dominio critico; hook pre-commit | 55 testes backend; 11 Angular; 39/39 mutantes eliminados. RED real registrado para regressao SARIF, precisao, RFC 9457 e CSRF; nao alegamos TDD retroativo do legado. |
 | 4 — SOLID | Identidade centralizada, contratos AcaoApi com provedores reais, injecao por construtor e regras ArchUnit | Cinco regras de arquitetura; sem interfaces especulativas. A suite comum de contrato entre todos os provedores ainda pode ser ampliada. |
 | 5 — Design/revisao | ADRs, CONTEXT.md, rastreador e fronteiras de aplicacao por dominio | Revisao independente Standards/Spec sem P1/P2 pendente nas fronteiras revisadas; ver review-2026-11-05.md. |
 | 6 — Padroes | Strategy de cotacoes e facade de contrato HTTP na forma idiomatica Spring; alternativas/custos em ADR | gof-patterns e design-pattern-review instaladas e imutaveis; nenhum framework de patterns adicionado. |
@@ -20,7 +20,7 @@ A aplicacao financeira e o frontend foram preservados; nao foi copiado o catalog
 | 8 — Spec Kit | CLI 1.0.12, integracao OMP, extensao Git 1.0.1; constituicao, spec, plano, pesquisa, modelo, contrato, checklist e quickstart | Artefatos e comandos disponiveis. Ratificacao humana/aceite continuam pendentes; instalacao nao equivale a execucao de todos os comandos com um modelo. |
 | 9 — Context Engineering | Contexto curto, vocabulario separado, rules de conflito/confianca e tokenizer o200k_base 0.12.0 | Orcamento real em tokens, limite 4.000 e 40 linhas do AGENTS; descricoes de skills incluidas, corpos carregados sob demanda. |
 | 10 — Loop Engineering | Prompt, estado em arquivos, BLOQUEIO e condicao deterministica em scripts/loop_done.py/.sh | Sete estados testados, incluindo build/trace falhando e checklist vazio. Nenhum loop de modelo foi acionado. |
-| 11 — Seguranca | Isolamento por usuario, precisao decimal, transacao/versao, CSRF delimitado, records sem entidades/PII, Gitleaks, CodeQL, FindSecBugs e SBOM | Gates locais executados; preflight integral ainda exige NVD_API_KEY. Gate complementar Semgrep/OSV e DAST exigem ambiente proprio; nao foram aprovados por simulacao. |
+| 11 — Seguranca | Isolamento por usuario, precisao decimal, transacao/versao, CSRF delimitado, records sem entidades/PII, Gitleaks, CodeQL, FindSecBugs e SBOM | Gates locais executados; preflight integral ainda exige NVD_API_KEY. Gate complementar Semgrep/Gitleaks/FindSecBugs/OSV aprovado em Docker; uma triagem Actuator restrita em security-actuator.md. ZAP health passivo sem alertas; fluxos autenticados ainda nao varridos. |
 | 12 — Agentes CI/CD | Quality/SAST/secrets/SCA/mutacao, SHA de actions, minimo privilegio, CODEOWNERS, template PR e revisao OpenAI manual limitada ao diff do ultimo commit | actionlint passou; zizmor pedante offline sem achados. GitHub Actions e branch protection nao foram executados/configurados remotamente. Destino OpenAI e envio do diff autorizados em 06/11; dez testes locais passam sem API. Chave GitHub e execucao real pendentes. |
 | 13 — Desempenho/observabilidade | Actuator/Prometheus, OTel/JDBC Boot 4, metrica apos commit, ECS, LGTM compose, SLO, digest e smoke k6+OTLP | Carga local e chegada dos spans HTTP/JDBC comprovadas. Sem alegar ganho antes/depois, volume de producao ou dashboard Docker executado. Listas permanecem sem paginacao. |
 | Catalogo de referencia | Flyway/H2 isolado, PostgreSQL em prod, Failsafe, OpenSpec/rastreabilidade adaptados a corretora | Banco legado nao foi migrado nem apagado. V1 e para banco novo; reconciliacao depende do titular. |
@@ -28,7 +28,7 @@ A aplicacao financeira e o frontend foram preservados; nao foi copiado o catalog
 
 ## Evidencias
 
-- Backend: **43 testes unitarios/contexto/arquitetura + 11 integracoes = 54**, sem falhas; Spotless, Checkstyle, PMD e JaCoCo aprovados.
+- Backend: **43 testes unitarios/contexto/arquitetura + 12 integracoes = 55**, sem falhas; Spotless, Checkstyle, PMD e JaCoCo aprovados.
 - Cobertura backend: **380/399 linhas (95,24%)** e **82/90 ramos (91,11%)**; DTOs/entidades Lombok e bootstrap fora do contador, com persistencia/contratos exercitados por integracao.
 - PIT: **39 mutantes gerados, 39 eliminados**, 100% de forca no escopo CarteiraService. Limites de 80% preservados; assercoes foram fortalecidas a partir de 14 sobreviventes/sem cobertura iniciais.
 - Angular: **11 testes**, **100%** de linhas/ramos/funcoes/instrucoes **somente no escopo auth.service, auth.guard e auth.interceptor**; nao e cobertura global das telas. Lint e build aprovados, bundle inicial **409,22 kB**.
@@ -38,9 +38,11 @@ A aplicacao financeira e o frontend foram preservados; nao foi copiado o catalog
 - Gate SARIF: **12 testes**; loops: **7 testes**; TTSR: **10 casos positivos/negativos** e **zero ocorrencias na producao**.
 - Skills: **18 externas** com origem, commit e hash LF-normalizado; **6 OpenSpec** geradas e **coverage-gate** local. O lock tem algoritmo documentado e e verificado por scripts/check_skills.py.
 - Carga: k6 **2.3.0**, **5 usuarios / 30s**, H2 em memoria com um titular ficticio e carteira vazia: **12.707 requisicoes**, **0% de erro**, **p95 25,48 ms**. O receptor OTLP decodificou spans HTTP e JDBC; relatorio so guarda nomes e contagens, sem atributos pessoais.
-- SpotBugs/FindSecBugs e CycloneDX executados; SBOM com **174 componentes**. Nao substituem a auditoria de CVEs por Dependency-Check.
+- SpotBugs/FindSecBugs e CycloneDX executados; SBOM atualizado com **170 componentes**, OSV encontrou 170 pacotes e reportou zero achados. Nao substituem a auditoria de CVEs por Dependency-Check.
 
 ## Pendencias reais
 
-Consulte **operations-pending.md**: rotacao de credenciais historicas, NVD_API_KEY, Docker/DAST, secret OPENAI_API_KEY no GitHub, branch protection, aceite humano e conciliacao PostgreSQL legado.
+Consulte **operations-pending.md**: rotacao de credenciais historicas, NVD_API_KEY, DAST autenticado, secret OPENAI_API_KEY no GitHub, branch protection, aceite humano e conciliacao PostgreSQL legado.
 Essas pendencias nao foram escondidas, marcadas como feitas ou transformadas em excecoes de scanner. O commit local foi autorizado; publicacao remota continua condicionada ao preflight integral.
+
+Atualizacao 06/11: Boot 4.0.9/Cloud 2025.1.4 e BOM OpenTelemetry 1.67.0 corrigiram 87 ocorrencias pacote/vulnerabilidade do primeiro OSV. Gate complementar completo aprovado; nenhuma excecao CodeQL/SCA adicionada. A supressao Semgrep pontual de Prometheus e documentada e testada. Nova rodada de carga: 3.492 requisicoes, zero erros, p95 96,84 ms, 38.496 spans, com auditorias simultaneas; sem comparacao de desempenho. ZAP e somente baseline health, com aviso de spider na raiz 401.

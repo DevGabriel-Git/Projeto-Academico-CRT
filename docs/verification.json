@@ -12,8 +12,8 @@
     }
   },
   "surefire-reports": 43,
-  "failsafe-reports": 11,
-  "date": "2026-11-05",
+  "failsafe-reports": 12,
+  "date": "2026-11-06",
   "project": "Projeto-Academico-CRT",
   "reference": "a54c35fd28508355aa992ae3bc30f0fa07da9140",
   "mutation": {
@@ -44,10 +44,11 @@
   "load": {
     "users": 5,
     "seconds": 30,
-    "requests": 12707,
+    "requests": 3492,
     "errorRate": 0,
-    "p95Ms": 25.48628,
-    "database": "isolated H2, empty portfolio"
+    "p95Ms": 96.84494,
+    "database": "isolated H2, empty portfolio",
+    "note": "concurrent security workloads; no performance comparison claimed"
   },
   "publicationPreflight": {
     "status": "blocked",
@@ -60,5 +61,26 @@
     "localTests": 10,
     "liveApiExecuted": false,
     "reason": "OPENAI_API_KEY absent; remote publication requires complete preflight"
+  },
+  "dependencies": {
+    "springBoot": "4.0.9",
+    "springCloud": "2025.1.4",
+    "openTelemetryBom": "1.67.0",
+    "sbomComponents": 170,
+    "osvPackagesFound": 170,
+    "osvFindings": 0
+  },
+  "complementaryGate": {
+    "status": "passed",
+    "semgrepFindings": 0,
+    "semgrepScopedTriage": "docs/security-actuator.md",
+    "gitleaksNewFindings": 0,
+    "spotbugsFindings": 0
+  },
+  "dast": {
+    "status": "partial baseline passed",
+    "scope": "unauthenticated health only",
+    "alerts": 0,
+    "limitation": "root spider returned 401; authenticated flows not scanned"
   }
 }

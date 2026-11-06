@@ -164,6 +164,17 @@ class CarteiraApiIT {
     }
 
     @Test
+    void metricasExigemTokenEInfoPermaneceDesativado() throws Exception {
+        assertThat(request("/actuator/prometheus", "GET", null, null).statusCode()).isEqualTo(401);
+        assertThat(request("/actuator/prometheus", "GET", null, "invalido").statusCode())
+                .isEqualTo(401);
+        var metricas = request("/actuator/prometheus", "GET", null, token);
+        assertThat(metricas.statusCode()).isEqualTo(200);
+        assertThat(metricas.body()).contains("jvm_").doesNotContain(token, "teste@example.com");
+        assertThat(request("/actuator/info", "GET", null, token).statusCode()).isEqualTo(404);
+    }
+
+    @Test
     void consultaAcoesECorretorasDoUsuario() throws Exception {
         assertThat(request("/acoes", "GET", null, token).body()).contains("PETR4");
         assertThat(request("/acoes/" + acaoId, "GET", null, token).statusCode()).isEqualTo(200);
