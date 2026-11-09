@@ -57,6 +57,12 @@ Perfil `prod` usa PostgreSQL: `DB_URL`, `DB_USER`, `DB_PASSWORD`. Flyway version
 V1 serve para banco novo. Banco legado precisa de backup, reconciliação de colunas/índices/restrições/sequências e baseline revisado antes de atualizar. Nunca apague dados para fazer a migração passar.
 Docker backend usa build em duas etapas, Java 21 e usuário sem privilégio. O compose continua usando PostgreSQL do host e exige `.env` local. Porta de gestão 9090 deve permanecer interna.
 
+No Windows, arquivos Java usam LF conforme `.gitattributes` e Spotless. O build Docker
+normaliza somente CRLF de checkouts antigos e copia `quality/`, mantendo as verificações
+de formatação e estilo. Após atualizar o código, reconstrua com `docker compose build backend`.
+O empacotamento Docker usa `-DskipTests package`; os testes e gates de `verify` são
+executados separadamente pelo hook e pelo preflight.
+
 ## Segurança e publicação
 
 `python tools/preflight.py origin/main` executa o portão integral e falha quando ferramenta/credencial/relatório está ausente. Use a base real se o branch principal tiver outro nome.
