@@ -1,6 +1,6 @@
 # Operacoes que nao podem ser atestadas somente com codigo
 - Revogar/rotacionar credenciais antigas encontradas em nove ocorrencias do historico; ver security-findings.md. Nenhum valor foi reproduzido nem o historico foi reescrito.
-- Disponibilizar NVD_API_KEY fora do Git e executar Dependency-Check/preflight integral.
+- Concluir Dependency-Check/preflight integral antes da publicacao. NVD_API_KEY foi configurada fora do Git e validada em 2026-11-09; triagem em security-nvd-2026-11-09.md.
 - Gate complementar executado e aprovado com Docker. ZAP baseline health executado sem alertas; ampliar DAST aos fluxos autenticados antes de atestar cobertura geral.
 - Destino OpenAI e envio do diff autorizados em 2026-11-06. Configurar o secret OPENAI_API_KEY no GitHub e executar o workflow manual apos publicacao revisada; ver ci-agent-activation.md. Nenhuma chamada real foi feita localmente.
 - Configurar branch protection/CODEOWNERS no GitHub e revisar o diff antes de push/PR.

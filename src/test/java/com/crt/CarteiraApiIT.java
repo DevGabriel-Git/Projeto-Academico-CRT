@@ -33,6 +33,13 @@ class CarteiraApiIT {
 
     record Response(int statusCode, String body) {}
 
+    @Test
+    void documentacaoServeSwaggerComSanitizadorCorrigido() throws Exception {
+        var response = request("/swagger-ui/swagger-ui-bundle.js", "GET", null, null);
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("DOMPurify.version=\"3.4.17\"");
+    }
+
     @BeforeEach
     void preparar() {
         historicos.deleteAll();

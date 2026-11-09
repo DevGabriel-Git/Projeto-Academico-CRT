@@ -55,8 +55,9 @@
     "note": "concurrent security workloads; no performance comparison claimed"
   },
   "publicationPreflight": {
-    "status": "blocked",
-    "reason": "NVD_API_KEY absent"
+    "status": "pending",
+    "reason": "NVD key validated 2026-11-09; integral preflight must finish before push",
+    "evidence": "reports/publication-preflight.log"
   },
   "externalAgent": {
     "status": "implemented, not remotely activated",
