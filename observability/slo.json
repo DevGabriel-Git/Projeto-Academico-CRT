@@ -1,0 +1,9 @@
+{
+  "httpP95Ms": 500,
+  "errorRate": 0.01,
+  "virtualUsers": 5,
+  "duration": "30s",
+  "routes": [
+    "carteira"
+  ]
+}

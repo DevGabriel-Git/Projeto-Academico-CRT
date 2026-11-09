@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [ -n "${COMSPEC:-}" ]; then
+  ./mvnw.cmd -B -ntp verify
+else
+  bash mvnw -B -ntp verify
+fi
+python scripts/check_traceability.py

@@ -1,133 +1,231 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
+import { UiPreferences, Theme } from './services/ui-preferences.service';
+import { IconComponent } from './shared/icon.component';
+import { DialogComponent } from './shared/dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    CommonModule,
+    FormsModule,
+    IconComponent,
+    DialogComponent,
+  ],
   template: `
-    <div class="flex h-screen bg-white dark:bg-[#0a0b0e] text-slate-800 dark:text-slate-200 overflow-hidden">
-      
-      <!-- Layout Principal (Só mostra logado) -->
-      <aside *ngIf="isLoggedIn" class="w-56 bg-slate-50 dark:bg-[#0d0f14] border-r border-orange-500 dark:border-[#1e2330] flex flex-col flex-shrink-0">
-        <div class="p-4 border-b border-orange-500 dark:border-[#1e2330]">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00d4aa] to-[#0099ff] flex items-center justify-center font-bold text-black text-sm">C</div>
-            <div>
-              <div class="text-black dark:text-white font-bold tracking-widest text-base">CRT</div>
-              <div class="text-[10px] text-slate-600 tracking-wider">Gestão de Ações</div>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <div class="app-shell" [class.auth-layout]="!isLoggedIn">
+      @if (isLoggedIn) {
+        @if (mobileMenu) {
+          <button
+            class="sidebar-shade"
+            aria-label="Fechar navegação"
+            (click)="mobileMenu = false"
+          ></button>
+        }
+        <aside class="sidebar" [class.open]="mobileMenu" aria-label="Navegação principal">
+          <a routerLink="/dashboard" class="brand" (click)="mobileMenu = false"
+            ><span class="brand-mark">c</span
+            ><span><strong>CRT</strong><small>investimentos</small></span></a
+          >
+          <p class="nav-label">SEU PORTFÓLIO</p>
+          <nav>
+            @for (item of navigation; track item.path) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="active-nav"
+                class="nav-link"
+                (click)="mobileMenu = false"
+              >
+                <crt-icon [name]="item.icon" /><span>{{ item.label }}</span
+                ><span class="nav-index">{{ item.index }}</span>
+              </a>
+            }
+          </nav>
+          <div class="sidebar-bottom">
+            <div class="sidebar-note">
+              <crt-icon name="shield" />
+              <p style="margin-top:10px">
+                Seu portfólio, no seu controle.<br />Organize. Acompanhe. Decida.
+              </p>
             </div>
-          </div>
-        </div>
-
-        <nav class="p-2 flex-1">
-          <p class="text-[10px] text-slate-600 tracking-widest uppercase px-2 py-2 mt-2">Principal</p>
-          <a routerLink="/dashboard" routerLinkActive="active-nav"
-             class="nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-orange-100 dark:hover:bg-[#1a1f2e] hover:text-slate-800 dark:text-slate-200 dark:hover:text-white mb-1 transition-all">
-            <i class="ti ti-layout-dashboard text-base"></i> Dashboard
-          </a>
-          <a routerLink="/corretoras" routerLinkActive="active-nav"
-             class="nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-orange-100 dark:hover:bg-[#1a1f2e] hover:text-slate-800 dark:text-slate-200 dark:hover:text-white mb-1 transition-all">
-            <i class="ti ti-building-bank text-base"></i> Corretoras
-          </a>
-          <a routerLink="/acoes" routerLinkActive="active-nav"
-             class="nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-orange-100 dark:hover:bg-[#1a1f2e] hover:text-slate-800 dark:text-slate-200 dark:hover:text-white mb-1 transition-all">
-            <i class="ti ti-chart-candle text-base"></i> Ações
-          </a>
-          <a routerLink="/carteira" routerLinkActive="active-nav"
-             class="nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-orange-100 dark:hover:bg-[#1a1f2e] hover:text-slate-800 dark:text-slate-200 dark:hover:text-white mb-1 transition-all">
-            <i class="ti ti-wallet text-base"></i> Carteira
-          </a>
-          <button (click)="toggleTheme()"
-             class="w-full text-left nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-orange-100 dark:hover:bg-[#1a1f2e] hover:text-slate-800 dark:text-slate-200 dark:hover:text-white mb-1 transition-all">
-            <i class="text-base" [class]="isDark ? 'ti ti-sun' : 'ti ti-moon'"></i> Modo {{ isDark ? 'Claro' : 'Escuro' }}
-          </button>
-          
-          <p class="text-[10px] text-slate-600 tracking-widest uppercase px-2 py-2 mt-3">Operações</p>
-          <a routerLink="/historico" routerLinkActive="active-nav"
-             class="nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-orange-100 dark:hover:bg-[#1a1f2e] hover:text-slate-800 dark:text-slate-200 dark:hover:text-white mb-1 transition-all">
-            <i class="ti ti-history text-base"></i> Histórico
-          </a>
-        </nav>
-        
-        <div class="p-4 border-t border-orange-500 dark:border-[#1e2330]">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-full bg-[#1e2330] flex items-center justify-center text-[11px] text-[#00d4aa] font-bold border border-[#2a3040]">{{ userInitials }}</div>
-              <div>
-                <div class="text-xs text-slate-800 dark:text-slate-300 font-medium">{{ userName }}</div>
+            <div class="user-box">
+              <span class="avatar">{{ userInitials }}</span>
+              <div style="flex:1">
+                <strong>{{ userName }}</strong
+                ><small>{{ isAdmin ? 'Administrador' : 'Conta pessoal' }}</small>
               </div>
+              <button class="icon-button" (click)="logout()" aria-label="Sair da conta">
+                <crt-icon name="logout" />
+              </button>
             </div>
-            <button (click)="logout()" class="text-xs text-slate-500 hover:text-red-500"><i class="ti ti-logout"></i> Sair</button>
           </div>
-        </div>
-      </aside>
-
-      <main class="flex-1 flex flex-col overflow-hidden w-full">
-        <router-outlet></router-outlet>
-      </main>
+        </aside>
+      }
+      <div class="workspace">
+        <header class="topbar">
+          @if (isLoggedIn) {
+            <div class="breadcrumb">
+              <button
+                class="icon-button mobile-only"
+                aria-label="Abrir navegação"
+                [attr.aria-expanded]="mobileMenu"
+                (click)="mobileMenu = !mobileMenu"
+              >
+                <crt-icon name="menu" /></button
+              ><span>Meu espaço</span><crt-icon name="chevron" /><strong>{{ pageTitle }}</strong>
+            </div>
+          }
+          <div class="top-actions">
+            @if (isLoggedIn) {
+              <button
+                class="search-trigger"
+                (click)="commandOpen = true"
+                aria-label="Buscar uma página"
+              >
+                <crt-icon name="search" /><span>Ir para...</span><kbd>Ctrl K</kbd>
+              </button>
+              <button
+                class="icon-button"
+                [class.active]="ui.privateValues()"
+                [attr.aria-pressed]="ui.privateValues()"
+                [attr.aria-label]="ui.privateValues() ? 'Mostrar valores' : 'Ocultar valores'"
+                (click)="ui.togglePrivacy()"
+              >
+                <crt-icon name="eye" />
+              </button>
+            }
+            <div class="theme-switch" aria-label="Aparência">
+              @for (option of themeOptions; track option.value) {
+                <button
+                  [class.selected]="ui.theme() === option.value"
+                  [attr.aria-pressed]="ui.theme() === option.value"
+                  [attr.aria-label]="option.label"
+                  [title]="option.label"
+                  (click)="ui.setTheme(option.value)"
+                >
+                  <crt-icon [name]="option.icon" />
+                </button>
+              }
+            </div>
+          </div>
+        </header>
+        <main id="conteudo" class="app-content"><router-outlet /></main>
+      </div>
     </div>
-  `,
-  styles: [`
-    .active-nav {
-      background: #0f1e2e !important;
-      color: #00d4aa !important;
-      border-left: 2px solid #00d4aa;
+    <crt-dialog [open]="commandOpen" title="Para onde vamos?" (dismissed)="commandOpen = false">
+      <label class="field"
+        >Buscar uma página<input
+          [(ngModel)]="commandQuery"
+          placeholder="Carteira, ativos, histórico..."
+      /></label>
+      <nav class="command-list" aria-label="Resultados da busca">
+        @for (item of matchingPages; track item.path) {
+          <a [routerLink]="item.path" (click)="commandOpen = false"
+            ><crt-icon [name]="item.icon" />{{ item.label
+            }}<crt-icon name="arrow" style="margin-left:auto"
+          /></a>
+        }
+        @if (!matchingPages.length) {
+          <p class="hint">Nenhuma página encontrada.</p>
+        }
+      </nav>
+    </crt-dialog>
+    @if (ui.toast()) {
+      <div class="toast" role="status">
+        <crt-icon name="check" /><span>{{ ui.toast() }}</span
+        ><button aria-label="Dispensar mensagem" (click)="ui.toast.set('')">
+          <crt-icon name="close" />
+        </button>
+      </div>
     }
-  `]
+  `,
 })
 export class App {
-  isDark = false;
-
-  constructor(private authService: AuthService, private router: Router) {}
-
-  get isLoggedIn() {
+  mobileMenu = false;
+  commandOpen = false;
+  commandQuery = '';
+  readonly themeOptions: { value: Theme; label: string; icon: string }[] = [
+    { value: 'light', label: 'Modo claro', icon: 'sun' },
+    { value: 'dark', label: 'Modo escuro', icon: 'moon' },
+    { value: 'system', label: 'Tema do sistema', icon: 'monitor' },
+  ];
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    public ui: UiPreferences,
+  ) {}
+  get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
   }
-
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+  get navigation() {
+    const pages = [
+      { path: '/dashboard', label: 'Visão geral', icon: 'dashboard', index: '01' },
+      { path: '/carteira', label: 'Minha carteira', icon: 'wallet', index: '02' },
+      { path: '/acoes', label: 'Ativos', icon: 'chart', index: '03' },
+      { path: '/corretoras', label: 'Corretoras', icon: 'building', index: '04' },
+      { path: '/historico', label: 'Histórico', icon: 'history', index: '05' },
+    ];
+    return this.isAdmin
+      ? [...pages, { path: '/admin', label: 'Administração', icon: 'shield', index: '06' }]
+      : pages;
+  }
+  get pageTitle(): string {
+    return (
+      this.navigation.find((item) => this.router.url.startsWith(item.path))?.label || 'Meu espaço'
+    );
+  }
+  get matchingPages() {
+    return this.navigation.filter((item) =>
+      item.label.toLocaleLowerCase('pt-BR').includes(this.commandQuery.toLocaleLowerCase('pt-BR')),
+    );
+  }
   get userName(): string {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const u = JSON.parse(userStr);
-        if (u.nome) return u.nome.split(' ')[0];
-      } catch (e) {}
-    }
-    return 'Usuário';
+    return this.storedName().split(' ')[0];
   }
-
   get userInitials(): string {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const u = JSON.parse(userStr);
-        if (u.nome) {
-           const parts = u.nome.split(' ');
-           if (parts.length > 1) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-           return parts[0].substring(0, 2).toUpperCase();
-        }
-      } catch (e) {}
-    }
-    return 'US';
+    const parts = this.storedName().trim().split(/\s+/);
+    return (
+      parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].substring(0, 2)
+    ).toUpperCase();
   }
-
-  logout() {
+  logout(): void {
+    this.mobileMenu = false;
+    this.commandOpen = false;
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-
-  ngOnInit() {
-    this.isDark = document.documentElement.classList.contains('dark');
+  @HostListener('document:keydown', ['$event'])
+  shortcut(event: KeyboardEvent): void {
+    if (this.isLoggedIn && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      this.commandOpen = true;
+    }
   }
-
-  toggleTheme() {
-    this.isDark = !this.isDark;
-    if (this.isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  @HostListener('window:storage', ['$event'])
+  synchronizeSession(event: StorageEvent): void {
+    if (event.key !== 'token' && event.key !== null) return;
+    this.authService.clearClientState();
+    this.mobileMenu = false;
+    this.commandOpen = false;
+    this.router.navigate(['/login'], { queryParams: { reason: 'changed' } });
+  }
+  private storedName(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      return typeof user?.nome === 'string' && user.nome.trim() ? user.nome : 'Usuário';
+    } catch {
+      return 'Usuário';
     }
   }
 }

@@ -1,2 +1,17 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+*.java text eol=lf
+
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+.githooks/* text eol=lf
+
+# Preserve upstream Markdown hard line breaks and fill-in templates. Skill hashes remain checked.
+.agents/skills/clean-code/SKILL.md whitespace=-blank-at-eol,-blank-at-eof
+.agents/skills/harness-creator/references/context-engineering-pattern.md whitespace=-blank-at-eol,-blank-at-eof
+.agents/skills/harness-creator/references/gotchas.md whitespace=-blank-at-eol,-blank-at-eof
+.agents/skills/harness-creator/references/lifecycle-bootstrap-pattern.md whitespace=-blank-at-eol,-blank-at-eof
+.agents/skills/harness-creator/references/multi-agent-pattern.md whitespace=-blank-at-eol,-blank-at-eof
+.agents/skills/harness-creator/references/tool-registry-pattern.md whitespace=-blank-at-eol,-blank-at-eof
+.agents/skills/harness-creator/templates/session-handoff.md whitespace=-blank-at-eol,-blank-at-eof

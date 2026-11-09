@@ -1,25 +1,25 @@
 package com.crt.controller;
 
-import com.crt.entity.Acao;
-import com.crt.service.AcaoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import com.crt.dto.AcaoResponse;
+import com.crt.service.AcaoApplicationService;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/acoes")
+@RequiredArgsConstructor
 public class AcaoController {
-
-    @Autowired
-    private AcaoService service;
+    private final AcaoApplicationService service;
 
     @PostMapping
-    public Acao cadastrar(@RequestParam String ticker, @RequestParam String mercado, @RequestParam String cnpj) {
+    public AcaoResponse cadastrar(
+            @RequestParam String ticker, @RequestParam String mercado, @RequestParam String cnpj) {
         return service.cadastrar(ticker, mercado, cnpj);
     }
 
     @GetMapping
-    public List<Acao> listar() {
+    public List<AcaoResponse> listar() {
         return service.listar();
     }
 
@@ -29,17 +29,17 @@ public class AcaoController {
     }
 
     @GetMapping("/{id}")
-    public Acao buscarPorId(@PathVariable Long id) {
+    public AcaoResponse buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 
     @GetMapping("/ticker/{ticker}")
-    public Acao buscarPorTicker(@PathVariable String ticker) {
+    public AcaoResponse buscarPorTicker(@PathVariable String ticker) {
         return service.buscarPorTicker(ticker);
     }
 
     @PutMapping("/{id}/atualizar-cotacao")
-    public Acao atualizarCotacao(@PathVariable Long id) {
+    public AcaoResponse atualizarCotacao(@PathVariable Long id) {
         return service.atualizarCotacao(id);
     }
 }

@@ -1,0 +1,105 @@
+{
+  "coverage": {
+    "BRANCH": {
+      "covered": 110,
+      "missed": 8,
+      "percent": 93.22
+    },
+    "LINE": {
+      "covered": 435,
+      "missed": 19,
+      "percent": 95.81
+    }
+  },
+  "surefire-reports": 45,
+  "failsafe-reports": 29,
+  "date": "2026-11-06",
+  "project": "Projeto-Academico-CRT",
+  "reference": "a54c35fd28508355aa992ae3bc30f0fa07da9140",
+  "mutation": {
+    "generated": 39,
+    "killed": 39,
+    "scope": "CarteiraService"
+  },
+  "frontend": {
+    "tests": 51,
+    "coverageAuthBoundaryPercent": 100,
+    "globalCoverageClaimed": false,
+    "initialBundleKB": 442.93,
+    "coverageScope": "auth.service, auth.guard, admin.guard, auth.interceptor, portfolio, ui-preferences.service, portfolio-store.service",
+    "coverageLinesPercent": 92.41,
+    "coverageBranchesPercent": 88.43
+  },
+  "securityGateTests": 12,
+  "loopTests": 7,
+  "ruleCases": 10,
+  "externalSkills": 18,
+  "openspecScenarios": 31,
+  "codeql": {
+    "version": "2.27.4",
+    "languages": [
+      "java",
+      "javascript-typescript"
+    ],
+    "threshold": 7.0,
+    "gate": "passed",
+    "baselineFindings": 0
+  },
+  "load": {
+    "users": 5,
+    "seconds": 30,
+    "requests": 3492,
+    "errorRate": 0,
+    "p95Ms": 96.84494,
+    "database": "isolated H2, empty portfolio",
+    "note": "concurrent security workloads; no performance comparison claimed"
+  },
+  "publicationPreflight": {
+    "status": "pending",
+    "reason": "NVD key validated 2026-11-09; integral preflight must finish before push",
+    "evidence": "reports/publication-preflight.log"
+  },
+  "externalAgent": {
+    "status": "implemented, not remotely activated",
+    "provider": "OpenAI Responses API",
+    "destinationAuthorized": "2026-11-06",
+    "localTests": 10,
+    "liveApiExecuted": false,
+    "reason": "OPENAI_API_KEY absent; remote publication requires complete preflight"
+  },
+  "dependencies": {
+    "springBoot": "4.0.9",
+    "springCloud": "2025.1.4",
+    "openTelemetryBom": "1.67.0",
+    "sbomComponents": 170,
+    "osvPackagesFound": 170,
+    "osvFindings": 0
+  },
+  "complementaryGate": {
+    "status": "passed",
+    "semgrepScopedTriage": "docs/security-actuator.md",
+    "gitleaksNewFindings": 0,
+    "spotbugsFindings": 0,
+    "semgrepActiveFindings": 0,
+    "semgrepSuppressedFindings": 1
+  },
+  "dast": {
+    "status": "partial baseline passed",
+    "scope": "unauthenticated health only",
+    "alerts": 0,
+    "limitation": "root spider returned 401; authenticated flows not scanned"
+  },
+  "traceabilityGateTests": 4,
+  "roles": {
+    "status": "implemented and verified",
+    "profiles": [
+      "USER",
+      "ADMIN"
+    ],
+    "bootstrap": "explicit profile, no default password",
+    "realHttpSmoke": "passed with ephemeral H2",
+    "passwordRecovery": "unavailable by explicit owner choice; simulation removed",
+    "diffCoverage": "86/86 lines since 6cd0ef5",
+    "mavenLauncherSmoke": "passed on Windows with ephemeral H2"
+  }
+}

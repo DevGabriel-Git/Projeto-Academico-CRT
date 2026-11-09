@@ -1,0 +1,13 @@
+rules:
+  - id: corretora-controller-returns-entity
+    message: Controllers devem retornar DTOs publicos, nunca entidades JPA.
+    severity: ERROR
+    languages: [java]
+    patterns:
+      - pattern-inside: |
+          @RestController
+          class $CLASS { ... }
+      - pattern: public $TYPE $METHOD(...) { ... }
+      - metavariable-regex:
+          metavariable: $TYPE
+          regex: '^(?:java.util.)?(?:List<)?(?:com.crt.entity.)?(?:Acao|Carteira|Corretora|HistoricoCarteira)>?$'

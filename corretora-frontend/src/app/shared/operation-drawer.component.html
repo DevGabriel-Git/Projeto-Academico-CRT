@@ -1,0 +1,109 @@
+<crt-dialog
+  [open]="open"
+  title="Nova operação"
+  [drawer]="true"
+  [busy]="busy()"
+  (dismissed)="dismissed.emit()"
+>
+  @if (!store.brokers().length) {
+    <div class="notice">Cadastre uma corretora e um ativo antes de operar.</div>
+  }
+  <p class="step-label">{{ review ? '02 — Revise e confirme' : '01 — Defina sua operação' }}</p>
+  @if (!review) {
+    <div class="stack">
+      <div class="segmented" aria-label="Tipo de operação">
+        <button [class.selected]="type === 'COMPRA'" (click)="type = 'COMPRA'">Comprar</button
+        ><button [class.selected]="type === 'VENDA'" (click)="type = 'VENDA'">Vender</button>
+      </div>
+      <label class="field"
+        >Corretora<select [(ngModel)]="brokerId" (ngModelChange)="brokerChanged()">
+          <option [ngValue]="null">Selecione uma corretora</option>
+          @for (broker of store.brokers(); track broker.id) {
+            <option [ngValue]="broker.id">{{ broker.nomeFantasia || broker.razaoSocial }}</option>
+          }
+        </select></label
+      >
+      <label class="field"
+        >Ativo<select [(ngModel)]="stockId" (ngModelChange)="stockChanged()" [disabled]="!brokerId">
+          <option [ngValue]="null">Selecione um ativo</option>
+          @for (asset of availableStocks; track asset.id) {
+            <option [ngValue]="asset.id">{{ asset.ticker }} · {{ asset.nomeEmpresa }}</option>
+          }</select
+        ><small>Somente ativos vinculados à corretora selecionada.</small></label
+      >
+      @if (stock) {
+        <div class="notice">
+          <strong>{{ stock.ticker }}</strong> · Saldo:
+          {{ holding?.quantidade || 0 }} unidades<br /><span class="hint"
+            >Última cotação: {{ stock.cotacaoAtual | money: currency }} ·
+            {{ stock.dataHoraCotacao | date: 'dd/MM HH:mm' }}</span
+          >
+        </div>
+      }
+      <div class="form-grid">
+        <label class="field"
+          >Quantidade<input
+            type="number"
+            min="1"
+            step="1"
+            [(ngModel)]="quantity"
+            placeholder="0"
+            inputmode="numeric" /></label
+        ><label class="field"
+          >Preço unitário ({{ currency }})<input
+            type="number"
+            min="0.01"
+            step="0.01"
+            [(ngModel)]="price"
+            placeholder="0,00"
+            inputmode="decimal"
+        /></label>
+      </div>
+      <p class="hint">
+        Você pode ajustar o preço para corresponder à operação realizada. A cotação exibida é a
+        última salva, não uma oferta de negociação.
+      </p>
+      @if (preview) {
+        <div class="result-highlight">
+          <p class="eyebrow">Total da operação</p>
+          <p class="metric-value">{{ preview.total | money: currency }}</p>
+          <p class="hint">Saldo após a operação: {{ preview.quantity }} unidades</p>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="result-highlight">
+      <span class="pill">{{ type === 'COMPRA' ? 'Compra' : 'Venda' }} · {{ stock?.ticker }}</span>
+      <p class="metric-value" style="margin-top: 20px">{{ preview?.total | money: currency }}</p>
+      <p class="hint">Confira os dados antes de confirmar.</p>
+    </div>
+    <dl class="detail-list" style="margin-top: 24px">
+      <dt>Quantidade</dt>
+      <dd>{{ quantity }} unidades</dd>
+      <dt>Preço unitário</dt>
+      <dd>{{ price | money: currency }}</dd>
+      <dt>Saldo estimado após</dt>
+      <dd>{{ preview?.quantity }} unidades</dd>
+      <dt>Preço médio estimado</dt>
+      <dd>{{ preview?.average | money: currency }}</dd>
+    </dl>
+    <p class="hint" style="margin-top: 24px">
+      A posição final é recalculada pelo servidor no momento da confirmação. O registro não envia
+      ordens à bolsa.
+    </p>
+  }
+  @if (error()) {
+    <p class="notice error" role="alert" style="margin-top: 20px">{{ error() }}</p>
+  }
+  <footer class="dialog-footer">
+    @if (review) {
+      <button class="button" [disabled]="busy()" (click)="review = false">Voltar</button
+      ><button class="button primary" [disabled]="busy()" (click)="submit()">
+        {{ busy() ? 'Confirmando...' : 'Confirmar operação' }}
+      </button>
+    } @else {
+      <button class="button" (click)="dismissed.emit()">Cancelar</button
+      ><button class="button primary" (click)="prepareReview()">Revisar operação</button>
+    }
+  </footer>
+</crt-dialog>

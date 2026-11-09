@@ -1,0 +1,103 @@
+<section class="page" aria-labelledby="admin-title">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1 id="admin-title">Pessoas e perfis</h1>
+      <p>
+        Consulte as contas cadastradas. Carteiras e operações permanecem privadas de cada titular.
+      </p>
+    </div>
+    <span class="pill"><span class="badge-dot"></span>Acesso administrativo</span>
+  </header>
+  <div class="hero-grid">
+    <article class="panel metric hero">
+      <p class="metric-label">Contas cadastradas</p>
+      <p class="metric-value">{{ totalElements }}</p>
+      <p class="hint">Total informado pelo servidor</p>
+    </article>
+    <article class="panel metric">
+      <p class="metric-label">Registros nesta página</p>
+      <p class="metric-value">{{ users.length }}</p>
+      <p class="hint">Exibição de até 20 usuários por consulta</p>
+    </article>
+    <article class="panel metric">
+      <p class="metric-label">Página atual</p>
+      <p class="metric-value">
+        {{ page + 1 }} <span class="muted" style="font-size: 18px">/ {{ totalPages || 1 }}</span>
+      </p>
+      <p class="hint">Ordenação estável pelo cadastro</p>
+    </article>
+  </div>
+  @if (error) {
+    <p class="notice error" role="alert">
+      {{ error }} <button class="text-button" (click)="loadPage(page)">Tentar novamente</button>
+    </p>
+  }
+  <article class="panel">
+    <div class="toolbar">
+      <label class="search-field"
+        ><crt-icon name="search" /><input
+          [(ngModel)]="query"
+          placeholder="Buscar nome ou e-mail nesta página..."
+          aria-label="Buscar usuários nesta página" /></label
+      ><select class="filter-select" [(ngModel)]="profile" aria-label="Filtrar perfis nesta página">
+        <option value="">Todos os perfis</option>
+        <option value="ADMIN">Administradores</option>
+        <option value="USER">Usuários</option>
+      </select>
+    </div>
+    @if (loading) {
+      <div class="panel-body" role="status">
+        <div class="skeleton" style="margin-top: 20px"></div>
+      </div>
+    } @else if (!error) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Nome</th>
+              <th scope="col">E-mail</th>
+              <th scope="col">Perfil</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of filteredUsers; track user.id) {
+              <tr>
+                <td>
+                  <div class="asset-cell">
+                    <span class="avatar">{{ user.nome.slice(0, 2).toUpperCase() }}</span
+                    ><strong>{{ user.nome }}</strong>
+                  </div>
+                </td>
+                <td class="muted">{{ user.email }}</td>
+                <td>
+                  <span class="pill" [class.positive]="user.perfil === 'ADMIN'">{{
+                    user.perfil === 'ADMIN' ? 'Administrador' : 'Usuário'
+                  }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (!filteredUsers.length) {
+        <p class="hint" style="padding: 24px">Nenhum usuário nesta página.</p>
+      }
+    }
+    <footer class="table-footer">
+      <span>Busca e perfil filtram somente a página carregada.</span>
+      <nav aria-label="Paginação de usuários" class="actions">
+        <button class="button" (click)="loadPage(page - 1)" [disabled]="loading || page === 0">
+          Anterior</button
+        ><span>Página {{ page + 1 }} de {{ totalPages || 1 }}</span
+        ><button
+          class="button"
+          (click)="loadPage(page + 1)"
+          [disabled]="loading || page + 1 >= totalPages"
+        >
+          Próxima
+        </button>
+      </nav>
+    </footer>
+  </article>
+</section>

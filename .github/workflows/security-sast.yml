@@ -1,0 +1,49 @@
+name: Security SAST
+on:
+  pull_request:
+  schedule:
+    - cron: '23 8 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  codeql:
+    name: Codeql
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write # Required to upload the CodeQL SARIF report.
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [java-kotlin, javascript-typescript]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2
+        with:
+          languages: ${{ matrix.language }}
+          config-file: security-policy/codeql-config.yml
+      - if: matrix.language == 'java-kotlin'
+        run: bash mvnw -B -ntp -DskipTests clean package
+      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2
+        with:
+          output: reports/codeql
+          upload: true
+      - name: Gate SARIF
+        run: python3 security/check_sarif_reports.py reports/codeql
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: codeql-${{ matrix.language }}
+          path: reports/codeql
+          if-no-files-found: error

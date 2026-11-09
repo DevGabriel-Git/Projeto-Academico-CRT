@@ -1,0 +1,12 @@
+schema: spec-driven
+context: |
+  Corretora acadêmica: usuários mantêm corretoras, ações e carteira privada.
+  Java 21, Spring Boot 4, Maven, Angular 21, PostgreSQL e H2 em testes.
+  Dinheiro usa BigDecimal; operação e histórico devem ser atômicos.
+rules:
+  specs:
+    - Escrever requisitos SHALL e cenários GIVEN/WHEN/THEN verificáveis.
+    - Toda consulta privada deve validar propriedade pelo usuário autenticado.
+  tasks:
+    - Incluir teste de autorização negativa, validação, sucesso e erro.
+    - Concluir somente após verify e rastreabilidade aprovados.

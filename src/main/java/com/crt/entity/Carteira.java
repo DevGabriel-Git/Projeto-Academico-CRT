@@ -1,25 +1,24 @@
 package com.crt.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Carteira {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @Version private Long version;
 
     @ManyToOne
     @JoinColumn(name = "corretora_id")
@@ -33,9 +32,8 @@ public class Carteira {
     private BigDecimal precoMedio;
     private LocalDateTime dataAtualizacao;
 
-
     @OneToMany(mappedBy = "carteira", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonIgnore
     private List<HistoricoCarteira> historico = new ArrayList<>();
 
     @ManyToOne

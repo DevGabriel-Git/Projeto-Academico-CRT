@@ -1,0 +1,204 @@
+<section class="page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Cada movimento conta</p>
+      <h1>Histórico de operações</h1>
+      <p>Consulte, filtre e exporte os registros da sua carteira.</p>
+    </div>
+    <button
+      class="button"
+      (click)="export()"
+      [disabled]="
+        store.loading() || store.historyLoading() || !!store.historyError() || !filtered.length
+      "
+    >
+      <crt-icon name="download" />Exportar CSV
+    </button>
+  </header>
+  @if (store.error()) {
+    <p class="notice error" role="alert">
+      {{ store.error() }}
+      <button class="text-button" (click)="store.loadWithHistory()">Tentar novamente</button>
+    </p>
+  }
+  @if (store.historyError()) {
+    <p class="notice error" role="alert">
+      {{ store.historyError() }}
+      <button class="text-button" (click)="store.loadWithHistory()">Recarregar histórico</button>
+    </p>
+  }
+  <div class="hero-grid">
+    <article class="panel metric">
+      <p class="metric-label">Operações no filtro</p>
+      <p class="metric-value">
+        {{
+          store.loading() || store.historyLoading() || store.error() || store.historyError()
+            ? 'Indisponível'
+            : ui.privateValues()
+              ? '••'
+              : filtered.length
+        }}
+      </p>
+      <p class="hint">
+        {{ currency }} · {{ store.historyError() ? 'Dados incompletos' : 'Registros confirmados' }}
+      </p>
+    </article>
+    <article class="panel metric">
+      <p class="metric-label">Volume de compras</p>
+      <p class="metric-value">
+        {{
+          (store.loading() || store.historyLoading() || store.error() || store.historyError()
+            ? null
+            : buys
+          ) | money: currency
+        }}
+      </p>
+      <p class="hint">Soma das compras do período selecionado</p>
+    </article>
+    <article class="panel metric">
+      <p class="metric-label">Volume de vendas</p>
+      <p class="metric-value">
+        {{
+          (store.loading() || store.historyLoading() || store.error() || store.historyError()
+            ? null
+            : sales
+          ) | money: currency
+        }}
+      </p>
+      <p class="hint">Volume vendido, não lucro realizado</p>
+    </article>
+  </div>
+  <article class="panel">
+    <div class="toolbar">
+      <label class="search-field"
+        ><crt-icon name="search" /><input
+          [(ngModel)]="query"
+          (ngModelChange)="page = 0"
+          aria-label="Buscar no histórico"
+          placeholder="Busque por ativo ou corretora..." /></label
+      ><select
+        class="filter-select"
+        [(ngModel)]="currency"
+        (ngModelChange)="page = 0"
+        aria-label="Moeda das operações"
+      >
+        <option value="BRL">BRL · Real</option>
+        <option value="USD">USD · Dólar</option></select
+      ><select
+        class="filter-select"
+        [(ngModel)]="type"
+        (ngModelChange)="page = 0"
+        aria-label="Tipo de operação"
+      >
+        <option value="">Compras e vendas</option>
+        <option value="COMPRA">Compras</option>
+        <option value="VENDA">Vendas</option></select
+      ><select
+        class="filter-select"
+        [(ngModel)]="period"
+        (ngModelChange)="page = 0"
+        aria-label="Período do histórico"
+      >
+        <option value="all">Todo o período</option>
+        <option value="30">Últimos 30 dias</option>
+        <option value="90">Últimos 90 dias</option>
+        <option value="365">Último ano</option>
+      </select>
+    </div>
+    <div class="toolbar" style="background: var(--surface)">
+      <label class="field" style="font-size: 10px"
+        >De<input type="date" [(ngModel)]="from" (ngModelChange)="page = 0" /></label
+      ><label class="field" style="font-size: 10px"
+        >Até<input type="date" [(ngModel)]="to" (ngModelChange)="page = 0" /></label
+      ><button class="text-button" (click)="reset()" style="margin-left: auto">
+        Limpar filtros
+      </button>
+    </div>
+    @if (invalidRange) {
+      <p class="notice error" role="alert">
+        A data inicial precisa ser anterior ou igual à data final.
+      </p>
+    }
+    @if (store.loading() || store.historyLoading()) {
+      <div class="panel-body" role="status" aria-label="Carregando histórico">
+        <div class="skeleton" style="margin-top: 20px"></div>
+      </div>
+    } @else if (visible.length) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Ativo / corretora</th>
+              <th>Tipo</th>
+              <th>Data</th>
+              <th class="numeric">Quantidade</th>
+              <th class="numeric">Preço unitário</th>
+              <th class="numeric">Total · {{ currency }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of visible; track item.id) {
+              <tr>
+                <td>
+                  <div class="asset-cell">
+                    <span class="ticker-avatar">{{ item.ticker.slice(0, 2) }}</span
+                    ><span
+                      ><strong>{{ item.ticker }}</strong
+                      ><small>{{ item.broker }}</small></span
+                    >
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="pill"
+                    [class.positive]="item.tipo === 'COMPRA'"
+                    [class.negative]="item.tipo === 'VENDA'"
+                    >{{ item.tipo === 'COMPRA' ? 'Compra' : 'Venda' }}</span
+                  >
+                </td>
+                <td class="muted">{{ item.dataOperacao | date: 'dd/MM/yy HH:mm' }}</td>
+                <td class="numeric">{{ ui.privateValues() ? '••' : item.quantidade }}</td>
+                <td class="numeric">{{ item.precoUnitario | money: currency }}</td>
+                <td class="numeric">
+                  <strong>{{ item.valorTotal | money: currency }}</strong>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <footer class="table-footer">
+        <span>{{ filtered.length }} registros encontrados</span>
+        <div class="actions">
+          <button
+            class="icon-button"
+            aria-label="Página anterior do histórico"
+            [disabled]="currentPage === 0"
+            (click)="page = currentPage - 1"
+          >
+            <crt-icon name="chevron" style="transform: rotate(180deg)" /></button
+          ><span>{{ currentPage + 1 }} / {{ pages }}</span
+          ><button
+            class="icon-button"
+            aria-label="Próxima página do histórico"
+            [disabled]="currentPage + 1 >= pages"
+            (click)="page = currentPage + 1"
+          >
+            <crt-icon name="chevron" />
+          </button>
+        </div>
+      </footer>
+    } @else if (!store.error() && !store.historyError()) {
+      <div class="empty-state">
+        <crt-icon name="history" />
+        <h2>Nenhum movimento por aqui</h2>
+        <p>Ajuste os filtros ou registre uma operação para começar seu histórico.</p>
+        <button class="button" (click)="reset()">Limpar filtros</button>
+      </div>
+    }
+  </article>
+  <p class="hint" style="margin-top: 18px">
+    O CSV inclui todos os registros filtrados, mesmo os de outras páginas. A exportação contém
+    valores financeiros completos, inclusive com os valores ocultos na tela.
+  </p>
+</section>

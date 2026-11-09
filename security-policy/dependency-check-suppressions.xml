@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Exceções por falso positivo: pacote/versão/CVE exatos, responsável e prazo. -->
+    <suppress until="2026-12-09Z">
+        <notes><![CDATA[
+        Owner: Projeto-Academico-CRT maintainers. CVE-2026-53914 is in KAPT incremental
+        build-cache deserialization, not the Kotlin runtime standard library used here.
+        The Java/Maven application has no KAPT or Kotlin Gradle plugin.
+        Vendor fix: https://github.com/JetBrains/kotlin/commit/bf51df665b458fda7c3eaf436c4d88dc119d7ec6
+        Scope/evidence/review: docs/security-nvd-2026-11-09.md.
+        ]]></notes>
+        <packageUrl>pkg:maven/org.jetbrains.kotlin/kotlin-stdlib@2.2.21</packageUrl>
+        <cve>CVE-2026-53914</cve>
+    </suppress>
+    <suppress until="2026-12-09Z">
+        <notes><![CDATA[
+        Owner: Projeto-Academico-CRT maintainers. CVE-2022-31691 affects Spring Tools
+        IDE YAML editors, not the distinct Spring Boot DevTools library in this Maven app.
+        Vendor advisory: https://spring.io/security/cve-2022-31691/
+        Scope/evidence/review: docs/security-nvd-2026-11-09.md.
+        ]]></notes>
+        <packageUrl>pkg:maven/org.springframework.boot/spring-boot-devtools@4.0.9</packageUrl>
+        <cve>CVE-2022-31691</cve>
+    </suppress>
+</suppressions>

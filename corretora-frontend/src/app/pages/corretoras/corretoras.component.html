@@ -1,0 +1,133 @@
+<section class="page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Tudo no seu lugar</p>
+      <h1>Minhas corretoras</h1>
+      <p>As instituições que fazem parte da sua jornada de investimentos.</p>
+    </div>
+    <button class="button primary" (click)="openCreate()">
+      <crt-icon name="plus" />Adicionar corretora
+    </button>
+  </header>
+  @if (store.error()) {
+    <p class="notice error" role="alert">
+      {{ store.error() }}
+      <button class="text-button" (click)="store.load()">Tentar novamente</button>
+    </p>
+  }
+  <div class="panel toolbar" style="margin-bottom: 24px; border-bottom: 1px solid var(--line)">
+    <label class="search-field"
+      ><crt-icon name="search" /><input
+        [(ngModel)]="query"
+        aria-label="Buscar corretoras"
+        placeholder="Busque pelo nome ou CNPJ..." /></label
+    ><select class="filter-select" [(ngModel)]="status" aria-label="Filtrar consulta CVM">
+      <option value="">Todas as consultas CVM</option>
+      <option value="validated">Consulta positiva</option>
+      <option value="pending">Sem confirmação</option></select
+    ><span class="hint">{{ brokers.length }} corretoras</span>
+  </div>
+  @if (store.loading()) {
+    <div class="skeleton-grid" role="status">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  } @else if (brokers.length) {
+    <div class="list-grid">
+      @for (broker of brokers; track broker.id) {
+        <article class="panel broker-card">
+          <div class="broker-card-header">
+            <span class="ticker-avatar"><crt-icon name="building" /></span>
+            <div>
+              <h2>{{ broker.nomeFantasia || broker.razaoSocial }}</h2>
+              <p class="hint">{{ broker.cnpj }}</p>
+            </div>
+          </div>
+          <dl>
+            <dt>Localização</dt>
+            <dd>{{ broker.cidade || 'Não informada' }} {{ broker.uf ? '· ' + broker.uf : '' }}</dd>
+            <dt>Ativos vinculados</dt>
+            <dd>{{ broker.acoes.length }}</dd>
+            <dt>Consulta CVM</dt>
+            <dd>
+              <span class="pill" [class.positive]="broker.validadaNaCvm"
+                ><span class="badge-dot"></span
+                >{{ broker.validadaNaCvm ? 'Confirmada' : 'Sem confirmação' }}</span
+              >
+            </dd>
+          </dl>
+          <div class="card-actions">
+            <a routerLink="/acoes" class="text-button">Ver meus ativos <crt-icon name="arrow" /></a
+            ><button
+              class="icon-button"
+              [attr.aria-label]="'Remover ' + (broker.nomeFantasia || broker.razaoSocial)"
+              (click)="confirmDelete(broker)"
+            >
+              <crt-icon name="close" />
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  } @else if (!store.error()) {
+    <div class="panel empty-state">
+      <crt-icon name="building" />
+      <h2>
+        {{ query || status ? 'Nenhuma corretora para esse filtro' : 'Seu portfólio começa aqui' }}
+      </h2>
+      <p>
+        Adicione uma corretora pelo CNPJ. As informações disponíveis serão consultadas
+        automaticamente.
+      </p>
+      <button class="button primary" (click)="openCreate()">Adicionar corretora</button>
+    </div>
+  }
+  <p class="hint" style="margin-top: 24px">
+    “Sem confirmação” também pode indicar indisponibilidade da consulta. Isso não comprova
+    irregularidade da instituição.
+  </p>
+</section>
+<crt-dialog [open]="modal" title="Adicionar corretora" [busy]="saving()" (dismissed)="modal = false"
+  ><div class="stack">
+    <label class="field"
+      >CNPJ da instituição<input
+        [(ngModel)]="cnpj"
+        maxlength="18"
+        inputmode="numeric"
+        placeholder="00.000.000/0000-00"
+      /><small>Informe com ou sem pontuação.</small></label
+    >
+    <p class="notice">
+      Consultaremos o cadastro público e a disponibilidade de informações da CVM.
+    </p>
+    @if (error()) {
+      <p class="notice error" role="alert">{{ error() }}</p>
+    }
+  </div>
+  <footer class="dialog-footer">
+    <button class="button" [disabled]="saving()" (click)="modal = false">Cancelar</button
+    ><button class="button primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Consultando...' : 'Adicionar corretora' }}
+    </button>
+  </footer></crt-dialog
+>
+<crt-dialog
+  [open]="deleting !== null"
+  title="Remover corretora?"
+  [busy]="saving()"
+  (dismissed)="deleting = null"
+  ><p class="hint">
+    {{ deleting?.nomeFantasia || deleting?.razaoSocial }} será removida do seu cadastro. Vínculos
+    existentes podem impedir a exclusão.
+  </p>
+  @if (error()) {
+    <p class="notice error" role="alert" style="margin-top: 18px">{{ error() }}</p>
+  }
+  <footer class="dialog-footer">
+    <button class="button" [disabled]="saving()" (click)="deleting = null">Manter corretora</button
+    ><button class="button danger" [disabled]="saving()" (click)="remove()">
+      {{ saving() ? 'Removendo...' : 'Confirmar exclusão' }}
+    </button>
+  </footer></crt-dialog
+>

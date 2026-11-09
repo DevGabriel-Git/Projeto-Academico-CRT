@@ -1,12 +1,11 @@
 package com.crt.entity;
 
 import jakarta.persistence.*;
+import java.util.Collection;
+import java.util.List;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
-import java.util.Collections;
 
 @Entity
 @Table(name = "usuarios")
@@ -16,7 +15,6 @@ import java.util.Collections;
 @AllArgsConstructor
 @Builder
 public class Usuario implements UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -31,14 +29,23 @@ public class Usuario implements UserDetails {
     private String cpf;
 
     @Column(nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String senha;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    @Builder.Default
+    private Perfil perfil = Perfil.USER;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return List.of(
+                new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_" + perfil.name()));
     }
 
     @Override
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public String getPassword() {
         return this.senha;
     }
