@@ -93,6 +93,7 @@ def main(base):
         run([sys.executable, "scripts/check_traceability.py"])
         run([sys.executable, "scripts/context_budget.py"])
         run([sys.executable, "scripts/check_rules.py"])
+        run([sys.executable, "scripts/check_skills.py"])
         run([sys.executable, "-m", "unittest", "discover", "-s", "security/tests", "-v"])
         run([sys.executable, "-m", "unittest", "discover", "-s", "scripts/tests", "-v"])
         run([sys.executable, "scripts/check_diff_coverage.py", base])

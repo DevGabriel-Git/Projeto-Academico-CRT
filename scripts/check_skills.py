@@ -3,9 +3,13 @@ import hashlib
 import json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
+def path_order(path):
+    # Existing locks use Windows component ordering; make it explicit on every host.
+    return tuple(part.casefold() for part in path.parts), path.as_posix()
+
 def tree_hash(directory):
     digest=hashlib.sha256()
-    for file in sorted(directory.rglob("*")):
+    for file in sorted(directory.rglob("*"), key=lambda file: path_order(file.relative_to(directory))):
         if file.is_file():
             content=file.read_bytes()
             try: content=content.decode("utf-8").replace("\r\n","\n").encode("utf-8")
