@@ -6,6 +6,7 @@ import com.crt.dto.CepResponseDTO;
 import com.crt.dto.CnpjResponseDTO;
 import com.crt.entity.Corretora;
 import com.crt.entity.Usuario;
+import com.crt.exception.RecursoNaoEncontradoException;
 import com.crt.repository.CorretoraRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,13 +74,13 @@ public class CorretoraService {
     public Corretora buscarPorId(Long id) {
         return repository
                 .findByIdAndUsuarioId(id, getAuthenticatedUser().getId())
-                .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Corretora não encontrada"));
     }
 
     public Corretora buscarPorCnpj(String cnpj) {
         return repository
                 .findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId())
-                .orElseThrow(() -> new RuntimeException("CNPJ não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("CNPJ não encontrado"));
     }
 
     public void deletar(Long id) {

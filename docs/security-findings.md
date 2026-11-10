@@ -17,3 +17,7 @@ Varredura Gitleaks 8.30.1 em 2026-11-05: 9 ocorrencias historicas. Valores omiti
 Acao do titular: revogar/rotacionar as credenciais afetadas nos provedores, atualizar somente o ambiente local/gerenciador de segredos e verificar uso indevido. Reescrever historico exige coordenacao com colaboradores e copias existentes; nao foi executado. Nunca publicar os relatorios brutos nem valores dos segredos.
 
 As duas chaves fixas exclusivas dos testes novos foram substituidas por valores aleatorios em tempo de execucao, sem allowlist de scanner.
+
+## Identificacao sem valores — 10/11/2026
+
+As nove ocorrencias agrupam BRAPI_TOKEN/brapi.token (Brapi), TWELVEDATA_KEY/twelvedata.key (Twelve Data) e JWT_SECRET. A JWT local atual difere da chave historica, verificado somente em memoria. O titular tem acesso as chaves antigas em outro computador e tratara a revogacao depois; BRAPI/Twelve Data ainda nao foram confirmadas revogadas. Nao copiar essas chaves para o chat nem reutiliza-las. Novas integracoes ficam desativadas por escolha do titular.

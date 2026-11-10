@@ -66,8 +66,8 @@ executados separadamente pelo hook e pelo preflight.
 ## Segurança e publicação
 
 `python tools/preflight.py origin/main` executa o portão integral e falha quando ferramenta/credencial/relatório está ausente. Use a base real se o branch principal tiver outro nome.
-Não há autorização de publicação nesta entrega: há achados históricos de credenciais e verificações externas pendentes. Consulte [security/README.md](security/README.md).
-GitHub Actions estão preparados, mas a execução remota e a proteção de branch exigem configuração no repositório.
+Publicacao autorizada pelo titular, condicionada ao preflight integral e revisao da PR. Credenciais historicas de Brapi/Twelve Data ainda exigem revogacao; consulte [security/README.md](security/README.md).
+GitHub Actions foram executados e a main esta protegida por PR e cinco checks obrigatorios. NVD esta em secret criptografado; OpenAI e cotacoes reais permanecem desativados por escolha do titular.
 
 ## Integrações
 
@@ -87,3 +87,9 @@ Observabilidade/carga local: `python scripts/smoke_observability.py`; exige k6 e
 Login unico para USER e ADMIN por e-mail ou CPF. Cadastro publico cria USER; ADMIN recebe a tela /admin com consulta paginada de usuarios e acesso exclusivo as metricas. Carteiras permanecem privadas por titular, inclusive para administradores.
 
 Primeiro administrador: `tools/start_with_admin.ps1` pede os dados localmente, com senha oculta, e inicia o bootstrap explicito. Nao ha senha padrao nem conta criada em seu banco durante os testes. Veja [docs/perfis-acesso.md](docs/perfis-acesso.md). Smoke real isolado: `python scripts/smoke_roles.py`, depois de gerar o JAR.
+
+## Docker e teste autenticado
+
+Com PostgreSQL do host e `.env` configurados, execute `docker compose up -d --build`. Site: http://localhost:8081; API: http://localhost:8080. Portas publicadas apenas em loopback; BACKEND_PORT e FRONTEND_PORT permitem altera-las. O frontend usa Node 24 no build e exclui node_modules local do contexto.
+
+Laboratorio DAST sem banco real ou secrets: depois de `mvnw.cmd clean verify`, execute `python scripts/smoke_authenticated_dast.py --prepare-images` e `python scripts/smoke_authenticated_dast.py`. Requer Docker e JDK; cria H2 em memoria e usuarios ficticios em rede interna e remove seus recursos ao terminar. Resultado sanitizado em reports/authenticated-dast/result.json. A triagem informativa tem validade limitada em security-policy/dast-triage.json. O workflow executa em PR, manualmente e semanalmente.

@@ -45,3 +45,5 @@ e `.tools/` são saídas de build, dependências, caches e relatórios ignorados
 As pastas técnicas mantêm seus caminhos porque Maven, Angular, CI e ferramentas do
 curso os utilizam. Os arquivos soltos da pasta superior foram reunidos em
 `D:\Projeto\_arquivos-locais`, fora deste repositório.
+
+Laboratorio autenticado: scripts/smoke_authenticated_dast.py, testes em security/tests e src/test/java/lab/crt/dast, politicas em security-policy/dast-*.json. Evidencias resumidas em docs/verification.json; relatorios detalhados gerados em reports/, sem versionar credenciais.

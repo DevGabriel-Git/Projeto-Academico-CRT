@@ -1,0 +1,20 @@
+[
+  {
+    "ruleId": "10112",
+    "route": "/auth/login",
+    "risk": 0,
+    "owner": "DevGabriel-Git / mantenedores",
+    "until": "2026-12-10",
+    "reason": "Informativo de descoberta de sessao: o login deve emitir um JWT para a identidade ficticia autenticada. Nao indica quebra de autenticacao. Aceite restrito ao laboratorio H2 isolado e a esta rota; nenhum JWT e persistido na evidencia.",
+    "reference": "https://www.zaproxy.org/docs/alerts/10112/"
+  },
+  {
+    "ruleId": "10112",
+    "route": "/auth/register",
+    "risk": 0,
+    "owner": "DevGabriel-Git / mantenedores",
+    "until": "2026-12-10",
+    "reason": "Informativo de descoberta de sessao: o cadastro publico retorna JWT de USER por contrato, inclusive quando a entrada tenta injetar perfil ADMIN. A verificacao HTTP confirma ausencia de elevacao. Restrito a esta rota e ao laboratorio; sem autorizar alertas de seguranca.",
+    "reference": "https://www.zaproxy.org/docs/alerts/10112/"
+  }
+]
