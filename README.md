@@ -1,28 +1,166 @@
 # CRT — Sistema de Gestão de Ações
 
-Projeto acadêmico da UniFEF, disciplina de Sistemas da Informação, professor Jefferson.
-Autores: Gabriel Pereira, Rian Araújo e Paulo Candido.
+Projeto acadêmico da UniFEF, da disciplina de Sistemas da Informação, com o professor Jefferson.
+**Autores:** Gabriel Pereira, Rian Araújo e Paulo Candido.
 
-API de corretoras, ações, carteira e histórico privado por usuário; frontend Angular.
-A adequação ao curso está detalhada em [docs/adequacao-curso.md](docs/adequacao-curso.md), com evidências e pendências por módulo.
+O CRT permite cadastrar corretoras e ações, registrar compras e vendas e acompanhar a carteira e o histórico de cada usuário. O site tem temas claro e escuro. O administrador possui uma área para consultar usuários; as carteiras continuam privadas.
 
-Para localizar o código, a documentação e as ferramentas, consulte o [guia das pastas](docs/estrutura.md).
+## Comece por aqui
 
-## Ambiente
+Para rodar no Windows com Docker, siga os passos abaixo. Você precisa de:
 
-Java 21, Maven Wrapper 3.9.14, Node 24 LTS e npm. Backend Spring Boot 4; Angular 21.
-As ferramentas do curso são adaptadas à aplicação existente; o catálogo de referência não substitui o domínio da corretora.
+- **Docker Desktop aberto**, com o mecanismo Linux em execução.
+- **PostgreSQL instalado e em execução no seu computador**, na porta 5432.
+- Um banco chamado **corretora**, com usuário e senha de acesso.
 
-## Verificar
+O Docker deste projeto sobe o site e a API. **Ele não instala nem inicia o PostgreSQL.** Java e Node são instalados dentro das imagens durante o build; você só precisa instalá-los no computador se quiser desenvolver sem Docker.
 
-Na raiz, Windows PowerShell:
+### 1. Prepare o arquivo .env
+
+Abra o PowerShell na pasta `Projeto-Academico-CRT`, onde está o arquivo `docker-compose.yml`.
+
+Se ainda não existir um `.env`, crie uma cópia do exemplo:
+
+```powershell
+Copy-Item .env.example .env
+notepad .env
+```
+
+Se o arquivo já existir, apenas abra-o com `notepad .env`. Não substitua sua configuração atual pelo exemplo.
+
+Preencha os campos:
+
+| Campo | O que colocar |
+|---|---|
+| `DB_USER` | Usuário do seu PostgreSQL. |
+| `DB_PASSWORD` | Senha desse usuário. |
+| `DB_URL` | Endereço do banco para execução fora do Docker. No Compose, o endereço usado é `host.docker.internal:5432/corretora`. |
+| `JWT_SECRET` | Chave aleatória usada para proteger o login. Deve ser Base64 de pelo menos 32 bytes aleatórios. |
+| `BRAPI_TOKEN`, `TWELVEDATA_KEY`, `ALPHAVANTAGE_KEY` | Chaves dos serviços de cotação. Veja a seção de integrações abaixo. |
+
+Substitua os marcadores entre `< >` nos campos obrigatórios. O `.env` fica **na raiz do projeto**, ao lado deste README, e não deve ser enviado ao GitHub.
+
+Para gerar uma JWT_SECRET nova no PowerShell, execute o trecho abaixo e copie o resultado somente para seu `.env`:
+
+```powershell
+$jwtBytes = New-Object byte[] 32
+$jwtGenerator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$jwtGenerator.GetBytes($jwtBytes)
+$jwtGenerator.Dispose()
+[Convert]::ToBase64String($jwtBytes)
+```
+
+Em uma instalação existente, mantenha sua chave atual se ela já for segura. Trocar a JWT_SECRET invalida os logins existentes.
+
+### 2. Inicie o sistema
+
+```powershell
+docker compose up -d --build
+```
+
+O primeiro build pode levar alguns minutos. Depois, abra:
+
+| Acesso | Endereço |
+|---|---|
+| Site | [http://localhost:8081](http://localhost:8081) |
+| API | [http://localhost:8080](http://localhost:8080) |
+| Saúde da API | [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health) |
+
+As portas ficam acessíveis apenas no próprio computador. Para alterá-las, configure `FRONTEND_PORT` e `BACKEND_PORT` no `.env`.
+
+Comandos úteis:
+
+```powershell
+docker compose ps                 # Ver os serviços
+docker compose logs --tail=100 backend  # Ver os últimos logs da API
+docker compose down              # Parar os serviços
+```
+
+Ao atualizar o código, use novamente `docker compose up -d --build`.
+
+### 3. Entre na sua conta
+
+**Usuário comum:** abra o site, faça o cadastro e entre com e-mail ou CPF e senha. O cadastro público sempre cria uma conta USER. A senha deve ter entre 12 e 72 caracteres, respeitando o limite de 72 bytes UTF-8.
+
+**Administrador:** entre pela mesma tela, com a conta ADMIN criada no seu banco. O sistema abre a área administrativa automaticamente. **Não existe usuário ou senha padrão.** Se você já criou o administrador, não precisa criá-lo de novo.
+
+Para criar o primeiro administrador em uma instalação nova com Docker:
+
+1. Adicione `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_CPF` e `ADMIN_PASSWORD` ao seu `.env`, com os dados escolhidos por você. A senha deve ter pelo menos 12 caracteres e no máximo 72 bytes UTF-8.
+2. Execute:
+
+```powershell
+docker compose run --rm -e SPRING_PROFILES_ACTIVE=prod,bootstrap-admin backend
+```
+
+3. Aguarde a confirmação de criação no log e encerre essa execução com `Ctrl+C`.
+4. Remova os quatro campos `ADMIN_*` do `.env` e inicie normalmente com `docker compose up -d`.
+
+O bootstrap não promove uma conta USER existente nem redefine a senha de um administrador já criado. Para detalhes, veja [perfis de acesso](docs/perfis-acesso.md).
+
+A recuperação automática de senha está indisponível por escolha do responsável pelo projeto; o sistema não simula envio de e-mail.
+
+## Chaves e integrações
+
+**Você não precisa de NVD_API_KEY nem OPENAI_API_KEY para abrir o site.**
+
+| Integração | Para que serve | Situação |
+|---|---|---|
+| Brapi, Twelve Data e Alpha Vantage | Consultar cotações externas. | Sem novas chaves configuradas nesta entrega, por escolha do titular. |
+| BrasilAPI e ViaCEP | Consultar informações de empresas e endereços. | Dependem de acesso à internet e disponibilidade dos serviços. |
+| NVD | Verificar vulnerabilidades das dependências. | Chave configurada como secret criptografado no GitHub Actions. |
+| OpenAI | Revisão consultiva de código em workflow manual. | Não ativada, por escolha do titular. |
+
+Enquanto não quiser usar cotações, mantenha os campos de token com os marcadores do exemplo. Isso permite iniciar a aplicação, mas **não fornece cotações reais nem garante sucesso nas operações que consultam esses serviços**. Não há cotação fictícia automática para substituir uma falha.
+
+Chaves antigas de Brapi/Twelve Data apareceram no histórico do Git e precisam ser revogadas nos painéis dos provedores, mesmo que ainda funcionem. Apagar ou substituir o valor no `.env` não revoga uma chave. Não envie chaves pelo chat nem faça commit do `.env`.
+
+## Problemas comuns
+
+| Problema | O que conferir |
+|---|---|
+| Erro com `dockerDesktopLinuxEngine` | Abra o Docker Desktop e aguarde o mecanismo Linux iniciar. |
+| API não conecta ao banco | Confira PostgreSQL ativo, banco `corretora`, usuário e senha. O container também precisa ter permissão de conexão ao PostgreSQL do host. |
+| Porta ocupada | Altere `BACKEND_PORT` ou `FRONTEND_PORT` no `.env` e execute o Compose novamente. |
+| Login de administrador não funciona | Use a conta criada no mesmo banco do backend. O banco H2 de desenvolvimento é separado do PostgreSQL do Docker. |
+| Cotação falha | Confira se deseja ativar o provedor, se a chave é válida e se o serviço está disponível. |
+
+As migrações Flyway preparam um banco novo. Se for aproveitar um banco antigo de outra versão, faça backup e confira a compatibilidade antes; não apague dados para forçar a inicialização.
+
+## Desenvolver sem Docker
+
+Instale **Java 21** e **Node 24 LTS**. O Maven é fornecido pelo projeto. Configure as variáveis de ambiente na sessão do terminal ou na IDE: Spring não carrega o `.env` automaticamente.
+
+Na raiz do projeto:
+
+```powershell
+.\mvnw.cmd spring-boot:run '-Dspring-boot.run.profiles=dev'
+```
+
+Em outro terminal:
+
+```powershell
+cd corretora-frontend
+npm ci
+npm start -- --proxy-config proxy.conf.json
+```
+
+Abra [http://localhost:4200](http://localhost:4200). Esse modo usa o banco H2 em `data/corretora-dev`, separado do PostgreSQL. Para criar o primeiro administrador **desse banco de desenvolvimento**, use `.\tools\start_with_admin.ps1` com o ambiente configurado.
+
+## Executar as verificações
+
+Backend, na raiz:
 
 ```powershell
 .\mvnw.cmd clean verify
 python scripts/check_traceability.py
-python scripts/check_diff_coverage.py HEAD
-python scripts/context_budget.py
+python -m unittest discover -s scripts/tests -v
 python -m unittest discover -s security/tests -v
+```
+
+Frontend:
+
+```powershell
 cd corretora-frontend
 npm ci
 npm run lint
@@ -30,66 +168,26 @@ npm run test:coverage
 npm run build
 ```
 
-Linux/macOS: use `bash mvnw clean verify`. Testes usam H2 isolado, migrações Flyway e nenhum provedor externo.
-`verify` inclui Spotless, Checkstyle, PMD, unitários, ArchUnit, integração MockMvc com segurança/banco e JaCoCo mínimo 80% de linhas e ramos.
-DTOs, entidades com acesso gerado pelo Lombok e a classe principal ficam fora do cálculo; mapeamento/persistência são exercitados na integração.
-O relatório de cobertura é gerado em `target/site/jacoco/index.html`.
+Os testes Java usam banco H2 isolado. O `verify` executa testes, formatação, análise de código e cobertura mínima de 80% de linhas e ramos. O relatório fica em `target/site/jacoco/index.html`. Em Linux/macOS, use `bash mvnw` no lugar de `.\mvnw.cmd`.
 
-## Executar localmente
+Antes de publicar, o projeto exige `python tools/preflight.py origin/main`, com as ferramentas e a NVD_API_KEY configuradas. O build Docker não substitui esses testes. O hook pode ser ativado com `git config core.hooksPath .githooks`.
 
-Configure variáveis de ambiente da sessão com base em `.env.example`.
-`JWT_SECRET` deve ser Base64 de pelo menos 32 bytes aleatórios; gere com um gerenciador de segredos ou `SecureRandom`. Nunca use chave de teste em produção.
-`BRAPI_TOKEN`, `TWELVEDATA_KEY` e `ALPHAVANTAGE_KEY` são credenciais externas.
-Spring não carrega `.env` automaticamente; Docker Compose usa esse arquivo, e execução pela IDE/terminal exige exportar as variáveis na configuração da execução.
+Para executar o laboratório de segurança autenticado, após `clean verify`, com Docker e JDK disponíveis:
 
 ```powershell
-.\mvnw.cmd spring-boot:run '-Dspring-boot.run.profiles=dev'
+python scripts/smoke_authenticated_dast.py --prepare-images
+python scripts/smoke_authenticated_dast.py
 ```
 
-Perfil `dev`: H2 em arquivo `data/corretora-dev`, API na porta 8080, console H2 desabilitado.
-Em outro terminal: `cd corretora-frontend`, `npm start -- --proxy-config proxy.conf.json`; frontend na porta 4200.
-Swagger: `/swagger-ui/index.html`; autenticação `/auth/register` e `/auth/login`; health `/actuator/health`.
-Cadastro exige senha entre 12 e 72 caracteres. Operações de compra/venda exigem quantidade positiva; preço omitido usa a cotação atual.
+Ele usa usuários fictícios e H2 em memória, sem acessar seu banco real. O resultado fica em `reports/authenticated-dast/result.json`. Esse laboratório não substitui um teste completo de segurança de produção.
 
-## Banco e produção
+## Documentação do projeto
 
-Perfil `prod` usa PostgreSQL: `DB_URL`, `DB_USER`, `DB_PASSWORD`. Flyway versiona schema; Hibernate usa `validate`.
-V1 serve para banco novo. Banco legado precisa de backup, reconciliação de colunas/índices/restrições/sequências e baseline revisado antes de atualizar. Nunca apague dados para fazer a migração passar.
-Docker backend usa build em duas etapas, Java 21 e usuário sem privilégio. O compose continua usando PostgreSQL do host e exige `.env` local. Porta de gestão 9090 deve permanecer interna.
+- [Organização das pastas](docs/estrutura.md).
+- [Adequação aos módulos do curso e evidências](docs/adequacao-curso.md).
+- [Login e perfis USER/ADMIN](docs/perfis-acesso.md).
+- [Arquitetura](docs/architecture.md) e [decisões técnicas](docs/adr/).
+- [Segurança](security/README.md) e [ações externas pendentes](docs/operations-pending.md).
+- [Desempenho e observabilidade](docs/observability.md).
 
-No Windows, arquivos Java usam LF conforme `.gitattributes` e Spotless. O build Docker
-normaliza somente CRLF de checkouts antigos e copia `quality/`, mantendo as verificações
-de formatação e estilo. Após atualizar o código, reconstrua com `docker compose build backend`.
-O empacotamento Docker usa `-DskipTests package`; os testes e gates de `verify` são
-executados separadamente pelo hook e pelo preflight.
-
-## Segurança e publicação
-
-`python tools/preflight.py origin/main` executa o portão integral e falha quando ferramenta/credencial/relatório está ausente. Use a base real se o branch principal tiver outro nome.
-Publicacao autorizada pelo titular, condicionada ao preflight integral e revisao da PR. Credenciais historicas de Brapi/Twelve Data ainda exigem revogacao; consulte [security/README.md](security/README.md).
-GitHub Actions foram executados e a main esta protegida por PR e cinco checks obrigatorios. NVD esta em secret criptografado; OpenAI e cotacoes reais permanecem desativados por escolha do titular.
-
-## Integrações
-
-BrasilAPI (CNPJ/CVM), ViaCEP (endereço), Brapi (Brasil), TwelveData (EUA); adaptador AlphaVantage mantido como alternativa. Clientes usam timeouts e testes substituem a rede.
-Cotação de laboratório não é recomendação de investimento.
-
-
-## Kit da disciplina
-18 skills externas estao fixadas por origem/commit/hash em skills-lock.json. OpenSpec 1.13.2 e Spec Kit 1.0.12 foram inicializados; os comandos OMP estao em .omp/commands. Ferramentas locais ficam em .tools, ignorado pelo Git; versoes em tools/versions.json.
-`python scripts/check_skills.py` verifica a integridade; `python scripts/check_rules.py` executa casos e scan OMP; `python scripts/context_budget.py` mede tokens reais, incluindo descricoes das skills.
-O hook em .githooks/pre-commit executa verify e rastreabilidade. Ative neste clone com `git config core.hooksPath .githooks`.
-Teste de mutacao: `mvnw.cmd -Pmutation test-compile org.pitest:pitest-maven:mutationCoverage`.
-Observabilidade/carga local: `python scripts/smoke_observability.py`; exige k6 e dependencias tools/requirements.txt. Usa banco efemero, credenciais aleatorias, loopback e encerra os processos criados.
-
-## Perfis de acesso
-
-Login unico para USER e ADMIN por e-mail ou CPF. Cadastro publico cria USER; ADMIN recebe a tela /admin com consulta paginada de usuarios e acesso exclusivo as metricas. Carteiras permanecem privadas por titular, inclusive para administradores.
-
-Primeiro administrador: `tools/start_with_admin.ps1` pede os dados localmente, com senha oculta, e inicia o bootstrap explicito. Nao ha senha padrao nem conta criada em seu banco durante os testes. Veja [docs/perfis-acesso.md](docs/perfis-acesso.md). Smoke real isolado: `python scripts/smoke_roles.py`, depois de gerar o JAR.
-
-## Docker e teste autenticado
-
-Com PostgreSQL do host e `.env` configurados, execute `docker compose up -d --build`. Site: http://localhost:8081; API: http://localhost:8080. Portas publicadas apenas em loopback; BACKEND_PORT e FRONTEND_PORT permitem altera-las. O frontend usa Node 24 no build e exclui node_modules local do contexto.
-
-Laboratorio DAST sem banco real ou secrets: depois de `mvnw.cmd clean verify`, execute `python scripts/smoke_authenticated_dast.py --prepare-images` e `python scripts/smoke_authenticated_dast.py`. Requer Docker e JDK; cria H2 em memoria e usuarios ficticios em rede interna e remove seus recursos ao terminar. Resultado sanitizado em reports/authenticated-dast/result.json. A triagem informativa tem validade limitada em security-policy/dast-triage.json. O workflow executa em PR, manualmente e semanalmente.
+As ferramentas OpenSpec, Spec Kit e skills da disciplina estão documentadas nesses arquivos. Ferramentas locais ficam em `.tools/`; relatórios gerados, em `reports/`. Essas pastas não são enviadas ao GitHub.
