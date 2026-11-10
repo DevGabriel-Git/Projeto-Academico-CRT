@@ -4,6 +4,7 @@ import com.crt.adapter.acao.BrapiService;
 import com.crt.entity.Acao;
 import com.crt.entity.Corretora;
 import com.crt.entity.Usuario;
+import com.crt.exception.RecursoNaoEncontradoException;
 import com.crt.repository.AcaoRepository;
 import com.crt.repository.CorretoraRepository;
 import java.time.LocalDateTime;
@@ -33,7 +34,10 @@ public class AcaoService {
         Corretora corretora =
                 corretoraRepository
                         .findByCnpjAndUsuarioId(cnpj, getAuthenticatedUser().getId())
-                        .orElseThrow(() -> new RuntimeException("Corretora não encontrada"));
+                        .orElseThrow(
+                                () ->
+                                        new RecursoNaoEncontradoException(
+                                                "Corretora não encontrada"));
         Acao acao = cotacaoService.buscar(mercado, ticker);
         acao.setCorretora(corretora); // <-- associa a corretora
         acao.setUsuario(getAuthenticatedUser());
@@ -65,13 +69,13 @@ public class AcaoService {
     public Acao buscarPorId(Long id) {
         return repository
                 .findByIdAndUsuarioId(id, getAuthenticatedUser().getId())
-                .orElseThrow(() -> new RuntimeException("Ação não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Ação não encontrada"));
     }
 
     public Acao buscarPorTicker(String ticker) {
         return repository
                 .findByTickerAndUsuarioId(ticker, getAuthenticatedUser().getId())
-                .orElseThrow(() -> new RuntimeException("Ticker não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Ticker não encontrado"));
     }
 
     public Acao atualizarCotacao(Long id) {

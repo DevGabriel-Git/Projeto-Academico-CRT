@@ -6,20 +6,21 @@
       "percent": 93.22
     },
     "LINE": {
-      "covered": 435,
+      "covered": 436,
       "missed": 19,
-      "percent": 95.81
+      "percent": 95.82
     }
   },
-  "surefire-reports": 45,
-  "failsafe-reports": 29,
-  "date": "2026-11-06",
+  "surefire-reports": 47,
+  "failsafe-reports": 32,
+  "date": "2026-11-10",
   "project": "Projeto-Academico-CRT",
   "reference": "a54c35fd28508355aa992ae3bc30f0fa07da9140",
   "mutation": {
     "generated": 39,
     "killed": 39,
-    "scope": "CarteiraService"
+    "scope": "CarteiraService",
+    "date": "2026-11-06"
   },
   "frontend": {
     "tests": 51,
@@ -30,11 +31,11 @@
     "coverageLinesPercent": 92.41,
     "coverageBranchesPercent": 88.43
   },
-  "securityGateTests": 12,
+  "securityGateTests": 21,
   "loopTests": 7,
   "ruleCases": 10,
   "externalSkills": 18,
-  "openspecScenarios": 31,
+  "openspecScenarios": 33,
   "codeql": {
     "version": "2.27.4",
     "languages": [
@@ -48,24 +49,26 @@
   "load": {
     "users": 5,
     "seconds": 30,
-    "requests": 3492,
+    "requests": 9954,
     "errorRate": 0,
-    "p95Ms": 96.84494,
+    "p95Ms": 31.89,
     "database": "isolated H2, empty portfolio",
-    "note": "concurrent security workloads; no performance comparison claimed"
+    "note": "isolated laboratory only; HTTP/JDBC OTLP received; no performance comparison claimed",
+    "date": "2026-11-10"
   },
   "publicationPreflight": {
-    "status": "pending",
-    "reason": "NVD key validated 2026-11-09; integral preflight must finish before push",
+    "status": "required before publishing this change",
+    "lastCompletedHead": "822bcf4",
+    "lastCompletedDate": "2026-11-09",
     "evidence": "reports/publication-preflight.log"
   },
   "externalAgent": {
-    "status": "implemented, not remotely activated",
+    "status": "deferred by owner choice",
     "provider": "OpenAI Responses API",
     "destinationAuthorized": "2026-11-06",
     "localTests": 10,
     "liveApiExecuted": false,
-    "reason": "OPENAI_API_KEY absent; remote publication requires complete preflight"
+    "reason": "Owner declined activation on 2026-11-10; no live API call or secret configured"
   },
   "dependencies": {
     "springBoot": "4.0.9",
@@ -84,10 +87,18 @@
     "semgrepSuppressedFindings": 1
   },
   "dast": {
-    "status": "partial baseline passed",
-    "scope": "unauthenticated health only",
-    "alerts": 0,
-    "limitation": "root spider returned 401; authenticated flows not scanned"
+    "status": "passed_with_informational_triage",
+    "date": "2026-11-10",
+    "scope": "API, ephemeral H2, two USER identities and ADMIN authorization; four scoped active GET rules",
+    "authorizationChecks": 23,
+    "finishedTargetScans": 6,
+    "requests": 878,
+    "successfulAuthenticatedMessages": 222,
+    "lowMediumHighAlerts": 0,
+    "informationalAlerts": 2,
+    "triage": "security-policy/dast-triage.json, expires 2026-12-10",
+    "cleanupComplete": true,
+    "limitation": "does not attest production PostgreSQL, TLS, Angular UI or exhaustive penetration testing"
   },
   "traceabilityGateTests": 4,
   "roles": {
@@ -100,6 +111,14 @@
     "realHttpSmoke": "passed with ephemeral H2",
     "passwordRecovery": "unavailable by explicit owner choice; simulation removed",
     "diffCoverage": "86/86 lines since 6cd0ef5",
-    "mavenLauncherSmoke": "passed on Windows with ephemeral H2"
+    "mavenLauncherSmoke": "passed on Windows with ephemeral H2",
+    "realAdmin": "created and authenticated on 2026-11-09; personal data omitted"
+  },
+  "scriptTests": 33,
+  "github": {
+    "branchProtection": "active, strict PR plus five Actions checks; administrators included; no required independent approval",
+    "nvdSecret": "encrypted repository Actions secret configured with explicit authorization",
+    "scaRun": "https://github.com/DevGabriel-Git/Projeto-Academico-CRT/actions/runs/42806910156",
+    "scaConclusion": "success"
   }
 }

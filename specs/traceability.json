@@ -29,5 +29,7 @@
   "Migracao conserva papel minimo": "src/test/java/com/crt/security/PerfisMigrationTest.java#migracaoPreservaUsuarioExistenteComoUsuarioComum",
   "Autorizacao preservada em HTTP real": "src/test/java/com/crt/PerfisHttpIT.java#httpRealDistingueSemLoginSemPermissaoEAdministrador",
   "Novo login ignora token antigo": "src/test/java/com/crt/PerfisAcessoIT.java#loginNovoNaoEImpedidoPorBearerAntigo",
-  "Bootstrap exige mesma identidade": "src/test/java/com/crt/PrimeiroAdminIT.java#adminExistenteNaoAceitaIdentidadeDiferenteNoBootstrap"
+  "Bootstrap exige mesma identidade": "src/test/java/com/crt/PrimeiroAdminIT.java#adminExistenteNaoAceitaIdentidadeDiferenteNoBootstrap",
+  "Corretoras e ativos privados nao revelam existencia": "src/test/java/com/crt/CarteiraApiIT.java#corretorasEAtivosAlheiosRetornamNaoEncontradoParaUsuarioEAdmin",
+  "Consulta de corretora preserva colecoes e privacidade": "src/test/java/com/crt/CarteiraApiIT.java#titularConsultaCorretoraComAtivosSemExporEntidadesOuSegredos"
 }

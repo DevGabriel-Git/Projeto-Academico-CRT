@@ -1,0 +1,38 @@
+name: Authenticated security lab
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 8 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  authenticated-dast:
+    name: Isolated authenticated DAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.sha || github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify backend and build test fixture
+        run: bash mvnw -B -ntp clean verify
+      - name: Prepare pinned official images
+        run: python3 scripts/smoke_authenticated_dast.py --prepare-images
+      - name: Test authenticated API in isolated H2 laboratory
+        run: python3 scripts/smoke_authenticated_dast.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: authenticated-dast-evidence
+          path: reports/authenticated-dast/result.json
+          if-no-files-found: error
+          retention-days: 7

@@ -138,3 +138,17 @@ O sistema SHALL rejeitar CPF divergente mesmo quando o email informado pertence 
 #### Scenario: Bootstrap exige mesma identidade
 - **WHEN** o bootstrap repete email de ADMIN com CPF diferente
 - **THEN** falha com mensagem fixa sem alterar contas
+
+### Requirement: Corretoras e ativos privados nao revelam existencia
+O sistema SHALL responder404 para consulta, exclusao ou atualizacao de recursos de outro titular, incluindo quando o solicitante e ADMIN.
+
+#### Scenario: Corretoras e ativos privados nao revelam existencia
+- **WHEN** USER ou ADMIN consulta corretora por id/CNPJ, ativo por id/ticker, exclui corretora ou atualiza cotacao pertencente a outra pessoa
+- **THEN** recebe404 e os registros e a cotacao permanecem inalterados
+
+### Requirement: Consulta de corretora preserva colecoes e privacidade
+O sistema SHALL carregar os ativos da corretora do titular e retornar apenas DTOs publicos.
+
+#### Scenario: Consulta de corretora preserva colecoes e privacidade
+- **WHEN** o titular lista ou consulta por id/CNPJ uma corretora com ativos
+- **THEN** recebe200 com os ativos, sem senha ou CPF e sem falha de colecao nao carregada

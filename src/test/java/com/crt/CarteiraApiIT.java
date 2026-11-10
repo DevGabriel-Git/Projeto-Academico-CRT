@@ -104,6 +104,51 @@ class CarteiraApiIT {
     }
 
     @Test
+    void corretorasEAtivosAlheiosRetornamNaoEncontradoParaUsuarioEAdmin() throws Exception {
+        var outro = usuarios.findByEmail("outro@example.com").orElseThrow();
+        for (var perfil : new Perfil[] {Perfil.USER, Perfil.ADMIN}) {
+            outro.setPerfil(perfil);
+            usuarios.saveAndFlush(outro);
+            verificarRecursosPrivadosNaoEncontrados(outroToken);
+        }
+        assertThat(corretoras.existsById(corretoraId)).isTrue();
+        assertThat(acoes.findById(acaoId).orElseThrow().getCotacaoAtual())
+                .isEqualByComparingTo("30");
+    }
+
+    private void verificarRecursosPrivadosNaoEncontrados(String credential) throws Exception {
+        for (var path :
+                new String[] {
+                    "/corretoras/" + corretoraId,
+                    "/corretoras/cnpj/12345678000190",
+                    "/acoes/" + acaoId,
+                    "/acoes/ticker/PETR4"
+                }) {
+            assertThat(request(path, "GET", null, credential).statusCode()).isEqualTo(404);
+        }
+        assertThat(request("/corretoras/" + corretoraId, "DELETE", null, credential).statusCode())
+                .isEqualTo(404);
+        assertThat(
+                        request("/acoes/" + acaoId + "/atualizar-cotacao", "PUT", null, credential)
+                                .statusCode())
+                .isEqualTo(404);
+    }
+
+    @Test
+    void titularConsultaCorretoraComAtivosSemExporEntidadesOuSegredos() throws Exception {
+        for (var path :
+                new String[] {
+                    "/corretoras", "/corretoras/" + corretoraId, "/corretoras/cnpj/12345678000190"
+                }) {
+            var response = request(path, "GET", null, token);
+            assertThat(response.statusCode()).isEqualTo(200);
+            assertThat(response.body())
+                    .contains("PETR4")
+                    .doesNotContain("senha", "cpf", "password");
+        }
+    }
+
+    @Test
     void compraVendaEHistoricoAtomico() throws Exception {
         assertThat(request("/carteira/operar", "POST", operacao("COMPRA", 10), token).statusCode())
                 .isEqualTo(200);

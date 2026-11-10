@@ -8,4 +8,4 @@ Para ativar apos publicacao revisada: adicionar `OPENAI_API_KEY` em Settings > S
 
 `store=false` nao significa retencao zero: logs de monitoramento de abuso podem reter conteudo por ate 30 dias, conforme os controles da conta. Consulte a [documentacao de dados](https://developers.openai.com/api/docs/guides/your-data). Implementacao baseada na [Responses API](https://developers.openai.com/api/docs/guides/text) e no [modelo GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna).
 
-Validacao local usa respostas simuladas, sem exportar codigo ou consumir API. Execucao real no GitHub e configuracao do secret continuam pendentes.
+Validacao local usa respostas simuladas, sem exportar codigo ou consumir API. Em 10/11/2026 o titular optou por nao ativar estas integracoes agora. Nenhum secret OpenAI foi configurado e nenhuma chamada real foi executada; ativacao futura depende de novo pedido.
